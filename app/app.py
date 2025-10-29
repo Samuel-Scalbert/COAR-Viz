@@ -44,9 +44,6 @@ global data_dashboard
 data_dashboard = None
 # data_dashboard = dashboard(db, structure)
 
-# --- Import routes ---
-from app.routes import doc_route, dashboard_route, reset_db, software_route, api_route, disambiguate_route, author_route
-
 # --- Scheduler for Elasticsearch Sync ---
 scheduler = BackgroundScheduler()
 scheduler.add_job(
@@ -60,14 +57,10 @@ scheduler.start()
 # Shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown())
 
-# --- Flask Routes ---
+# --- Import routes ---
+from app.routes import doc_route, dashboard_route, reset_db, software_route, api_route, disambiguate_route, author_route, elastic_route
+
 @app.route('/')
 def home():
     data = home_data(db)
     return render_template('pages/home.html', data=data[0])
-
-# Trigger Elasticsearch sync manually
-@app.route('/elastic_update')
-def run_task():
-    sync_to_elasticsearch(db)
-    return "Elastic executed manually!"
