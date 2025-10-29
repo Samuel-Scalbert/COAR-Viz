@@ -134,6 +134,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
     dict_registered = {}
     dict_edge_author = {}
     new_file = False
+
     for data_file_xml in tqdm(data_xml_list):
         file_path = f'{data_path_xml}/{data_file_xml}'
         file_name = os.path.basename(file_path)
@@ -495,9 +496,5 @@ def insert_json_db(data_path_json,data_path_xml,db):
                         edge_auth_rel_struc['_from'] = author_document_id
                         edge_auth_rel_struc['_to'] = list_relation_documents._id
                         edge_auth_rel_struc.save()
-    if new_file:
-        try:
-            sync_to_elasticsearch(db)
-        except Exception as e:
-            return f"Elasticsearch sync failed: {e}"
+
     return True
