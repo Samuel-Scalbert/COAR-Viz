@@ -14,6 +14,7 @@ sudo docker run -d \
   docker.elastic.co/elasticsearch/elasticsearch:9.0.2
 '''
 
+
 '''
 sudo docker run -d \
   --name coar-viz \
