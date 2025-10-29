@@ -2,10 +2,8 @@ from flask import Flask, render_template
 from pyArango.connection import Connection
 from Utils.db import insert_json_db
 from Utils.home import home_data
-from apscheduler.schedulers.background import BackgroundScheduler
-import atexit
-from Utils.elastic_search import sync_to_elasticsearch
 import os
+from Utils.elastic_search import sync_to_elasticsearch
 
 app = Flask(__name__,template_folder='templates',static_folder='static')
 
@@ -37,28 +35,14 @@ def init_db():
     )[app.config['ARANGO_DB']]
 
 init_db()  # Call the init_db function to initialize the db variable
-
+sync_to_elasticsearch(db)
 
 structure = None
 global data_dashboard
 data_dashboard = None
-# data_dashboard = dashboard(db, structure)
+#data_dashboard = dashboard(db, structure)
 
-# --- Scheduler for Elasticsearch Sync ---
-scheduler = BackgroundScheduler()
-scheduler.add_job(
-    func=sync_to_elasticsearch,
-    trigger="interval",
-    hours=24,
-    args=[db]  # Pass the ArangoDB connection to the job
-)
-scheduler.start()
-
-# Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
-
-# --- Import routes ---
-from app.routes import doc_route, dashboard_route, reset_db, software_route, api_route, disambiguate_route, author_route, elastic_route
+from app.routes import doc_route, dashboard_route,reset_db, software_route, api_route, disambiguate_route, author_route, search_route, insert_json_route, elastic_route
 
 @app.route('/')
 def home():
