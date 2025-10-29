@@ -78,6 +78,9 @@ def sync_to_elasticsearch(db):
     # Create index with n-gram analyzer for partial matching
     index_body = {
         "settings": {
+            "index": {
+                "max_ngram_diff": 20  # must be >= max_gram - min_gram
+            },
             "analysis": {
                 "analyzer": {
                     "ngram_analyzer": {
@@ -92,8 +95,8 @@ def sync_to_elasticsearch(db):
                 "tokenizer": {
                     "ngram_tokenizer": {
                         "type": "ngram",
-                        "min_gram": 1,  # allow single characters
-                        "max_gram": 20,  # reasonable max length
+                        "min_gram": 1,
+                        "max_gram": 20,
                         "token_chars": ["letter", "digit"]
                     }
                 }
@@ -103,12 +106,10 @@ def sync_to_elasticsearch(db):
             "properties": {
                 "title": {
                     "type": "text",
-                    "analyzer": "ngram_analyzer",  # index-time analyzer
-                    "search_analyzer": "standard_lower"  # search-time analyzer
+                    "analyzer": "ngram_analyzer",
+                    "search_analyzer": "standard_lower"
                 },
-                "doc_id": {
-                    "type": "keyword"
-                }
+                "doc_id": {"type": "keyword"}
             }
         }
     }
