@@ -1,0 +1,1110 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* ======================= VARIABLE ======================= */
+
+:root{
+    --effet-color: #53a4dd;
+    --transition: .3s cubic-bezier(.25,.8,.5,1);
+    --widget-background: #ffffff;
+    height: 100vh;
+    font-family: "Poppins", sans-serif;
+}
+
+html{
+    font-size: 14px;
+    margin: 0;
+    height: 100%;
+    background-color: #e5e5e5;
+}
+
+aside { /* STYLE DU PANEAU DE GAUCHE */
+	background: linear-gradient(90deg, rgb(46, 96, 131) 0%, rgb(76, 78, 104) 100%);
+	border-right: 4px solid var(--effet-color);
+}
+
+.debug {
+    position: fixed;
+    bottom: 20px; /* Distance from the bottom */
+    right: 20px;  /* Distance from the right */
+    z-index: 1000; /* Ensures it stays on top of other content */
+}
+
+.debug a {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center aligns both the image and the text */
+    text-decoration: none; /* Remove underline from the link */
+    color: inherit; /* Keep the text color inherited from the parent */
+}
+
+.debug img {
+    margin-bottom: 8px; /* Adds some space between the image and the text */
+}
+
+.container{
+    display: grid;
+    margin: 0 auto;
+    grid-template-columns: 12rem auto 2rem;
+    height: 100%;
+}
+
+body{
+    margin: 0;
+    height: 100%;
+    user-select: none;
+    overflow-x: hidden;
+}
+
+/* ========================== GLOBAL ========================== */
+
+*{ /* Valeur pour éviter l'héritage WEB (style année 90 qui n'est pas en plein écran) */
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    border: 0;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+/* ======================= BODY GENERAL ======================= */
+
+.flex-container {
+    height: fit-content;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 15px;
+    margin:2rem;
+    justify-content: center;
+}
+
+.contexts, .source, .all-sources, .other-software, .time_block{
+    border: 2px solid transparent;
+    box-shadow: 0 3px 4px #00000029;
+    font-family: "Poppins", sans-serif;
+    font-size: 1rem;
+    height: fit-content;
+    border-radius: 10px;
+    background-color: #ffffff;
+    margin-bottom: 5px;
+    padding:1rem;
+}
+
+.contexts:hover, .source:hover, .all-sources:hover, .other-software:hover, .time_block:hover{
+    background:
+    linear-gradient(var(--widget-background) 0 0) padding-box, /*this is your grey background*/
+    linear-gradient(to left, #b3679c, #42a7e4) border-box;
+    border: 2px solid transparent;
+    border-radius: 10px;
+}
+
+.contexts {
+    width:100%;
+}
+
+.info_doc{
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.source, .all-sources, .other-software {
+    box-sizing: border-box;
+    flex: 250px;
+    margin-bottom: 25px;
+}
+
+.table_source{
+    display: flex;
+    width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.titre {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.sourceContainer, .structureContainer, .structureContainer_chart, .authorContainer {
+    font-family: "Poppins", sans-serif;
+    font-size: 0.9rem;
+    height: fit-content;
+    border: 1px solid #c8cad0;
+    box-shadow: 0 3px 4px #00000029;
+    border-radius: 10px;
+    background-color: #f7f7f7;
+    margin-bottom: 5px;
+    width:50%;
+    font-size: 1rem;
+    padding: 15px;
+    margin: 20px;
+}
+
+.canva_container{
+    font-family: "Poppins", sans-serif;
+    border: 1px solid #c8cad0;
+    box-shadow: 0 3px 4px #00000029;
+    border-radius: 10px;
+    background-color: #f7f7f7;
+}
+
+.software_canva_info .titre-block{
+    margin: 30px 0px;;
+}
+
+.sourceContainer:hover, .structureContainer:hover, .structureContainer_chart:hover, .authorContainer:hover { /* Couleur des bordure du widgets en Hover */
+    background:
+    linear-gradient(var(--widget-background) 0 0) padding-box, /*this is your grey background*/
+    linear-gradient(to left, #b3679c, #42a7e4) border-box;
+    border: 2px solid transparent;
+    border-radius: 10px;
+}
+
+.structureContainer_chart{
+    overflow: hidden;
+}
+
+
+.all-sources li, .other-software li {
+    float:left;
+    width:50%;
+    display:inline;
+}
+
+.titre-block {
+    background:
+    linear-gradient(var(--widget-background) 0 0) padding-box, /*this is your grey background*/
+    linear-gradient(to left, #b3679c, #42a7e4) border-box;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    font-size: 22px;
+    margin: 20px 30px;
+    min-width: 200px;
+    text-align: center;
+}
+
+
+/* ======================= FONT ======================= */
+
+
+h2{
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+
+h3{
+    font-weight: 500;
+    font-size: 0.87rem;
+}
+
+/* ================================================================================ */
+/* ================================== VOLET (WIDGET) ============================== */
+/* ================================================================================ */
+
+aside .toggle{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.4rem;
+}
+
+aside .toggle .logo{
+    display: flex;
+    gap: 0.5rem;
+}
+
+aside .toggle .close{
+    padding-right: 1rem;
+    display: none;
+}
+
+aside .sidebar{
+    display: flex;
+    flex-direction: column;
+    height: var(--height);
+    position: relative;
+    top: 20px;
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+aside .sidebar:hover{
+    box-shadow: none;
+}
+
+aside .sidebar a{
+    display: flex;
+    align-items: center;
+    color: #fff;
+    height: 3.7rem;
+    gap: 5px;
+    position: relative;
+    padding-left: 10px;
+    background-color: #121420;
+    transition: var(--transition);
+    border-bottom: 1px solid #41434f;
+}
+
+aside .sidebar a span{
+    font-size: 1.6rem;
+    transition: all 0.3s ease;
+}
+
+aside .sidebar a.active{
+    width: 100%;
+    margin-left: 0;
+}
+
+aside .sidebar a.active::before{
+    content: '';
+    width: 6px;
+    height: 18px;
+}
+
+aside .sidebar a:hover{ /* Background du menu en Hover  */
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(67,135,187,1) 100%);
+}
+
+aside .sidebar a:hover span{ /* Décalage à gauche en Hover des items du menu */
+    margin-left: 0.6rem;
+}
+
+aside .sidebar a h3{ /* Décalage à gauche en Hover des items du menu */
+    text-align: left;
+}
+
+/* =============================================================================== */
+/* ================================== MAIN (WIDGET) ============================== */
+/* =============================================================================== */
+
+/* ================================== Block Principal ================================== */
+
+main{ /* Marge du block Main avant le texte Dashboard */
+    margin-top: 1.4rem;
+    margin-left: 20px;
+}
+
+main .analyse{ /* Style Grid du block Main */
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.6rem;
+    align-items: start;
+}
+
+/* ================================== Styles des Widget ================================== */
+
+/* Set initial styles for the institution list */
+.structure {
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center items vertically */
+    margin: 10px 0; /* Add some margin for spacing */
+}
+
+.monitor-icon {
+    margin-right: 10px; /* Space between the icon and the text */
+}
+
+.monitor-icon .material-symbols-outlined:hover {
+    color: red; /* Change icon color on hover (customize as needed) */
+}
+
+.structure-text {
+    display: inline; /* Ensure text behaves like a sentence */
+}
+
+/* Optional: Adjust icon size if needed */
+.monitor-icon span {
+    font-size: 24px; /* Adjust size as necessary */
+    vertical-align: middle; /* Center icon vertically */
+}
+
+.institution-list {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
+    opacity: 0;
+}
+
+/* When the institution list is expanded */
+.institution-list.expanded {
+    max-height: fit-content; /* Set a high enough value to accommodate content */
+    opacity: 1;
+    transition: max-height 0.4s ease-in, opacity 0.4s ease-in; /* Change to ease-in for expansion */
+}
+
+
+.software-info, main .analyse .canvas{  /* Style widgets -> Pour Info j'ai groupé les 2 software et main pour simplifier */
+    background-color: var(--widget-background);
+    padding: 20px;
+    margin: 20px 0 0 0;
+    width: 100%;
+    height: 85vh;
+    overflow: auto;
+    position: relative;
+    font-family: 'Poppins', sans-serif;
+    border: 2px solid transparent;
+    box-shadow: 0 3px 4px #00000029;
+    border-radius: 10px;
+}
+
+.canvas::-webkit-scrollbar , .software-info::-webkit-scrollbar {
+            width: 16px;
+        }
+
+.canvas::-webkit-scrollbar-track , .software-info::-webkit-scrollbar-track {
+    border-radius: 8px;
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+.canvas::-webkit-scrollbar-thumb , .software-info::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+    background-color: #42a7e4;
+}
+
+.software-info:hover, main .analyse >div:hover{ /* Couleur des bordure du widgets en Hover */
+    background:
+    linear-gradient(var(--widget-background) 0 0) padding-box, /*this is your grey background*/
+    linear-gradient(to left, #b3679c, #42a7e4) border-box;
+    border: 2px solid transparent;
+    border-radius: 10px;
+}
+
+#title_box {
+    text-align: center;
+    padding: 5px;
+    margin: 20px 0 0 0;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 3px 4px #00000029;
+    background:
+    linear-gradient(var(--widget-background) 0 0) padding-box, /*this is your grey background*/
+    linear-gradient(to left, #b3679c, #42a7e4) border-box;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    font-size: 20px;
+}
+
+#title_dash h1 {
+    background-color: var(--widget-background);
+    background: linear-gradient(to right, #42a7e4,
+                    #b3679c, #b3679c, #42a7e4);
+            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+}
+
+#title_dash h1:hover {
+    animation: rainbow-animation 2s linear infinite;
+}
+
+@keyframes rainbow-animation {
+    to {
+        background-position: 138vh;
+    }
+}
+
+#title_dash{
+    font-size: 1.2rem;
+    justify-items: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.6rem;
+    align-items: start;
+}
+
+.canvas h1,h3{
+    text-align: center;
+}
+
+.canvas canvas{
+    margin: 0 auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+/* ======================== En-Tête des widgets ======================== */
+
+.toggle-title{
+    display: flex;
+    justify-content: space-between;
+}
+
+.button_insti .material-symbols-outlined{
+    padding-top: 2px;
+}
+
+.software-info h1{ /* Texte des En-tête */
+  position: sticky;
+  top: 0;
+  width: auto;
+  z-index: 1;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 26px;
+}
+
+.software-info h1::before { /* Box des En-tête */
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: 0px;
+  right: 0px;
+  bottom: -15px;
+  z-index: -1;
+  background-color: var(--widget-background);
+}
+
+.software-info h1::after { /* Ligne sous le texte */
+  content: "";
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(2,0,36,0) 0%, rgb(46, 96, 131) 50%, rgba(255,255,255,0) 100%);
+  display: block;
+}
+
+.list-software{
+    padding-top: 10px;
+}
+
+/* ======================== Boite de Recherche ======================== */
+
+.search{
+    text-align: center;
+    padding: 5px;
+    margin: 20px 0 0 0;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 3px 4px #00000029;
+    background: linear-gradient(var(--widget-background) 0 0);
+    border: 2px solid transparent;
+    border-radius: 10px;
+}
+
+.software_canva_info .search{
+    margin: 20px 0 20px 0;
+    text-align: start;
+
+}
+
+.search:hover{
+    background:
+    linear-gradient(var(--widget-background) 0 0) padding-box, /*this is your grey background*/
+    linear-gradient(to left, #b3679c, #42a7e4) border-box;
+}
+
+.mention_search_doc_id{
+    text-align: start;
+}
+
+.mention_search_doc_id:hover{
+    color: #b3679c;
+}
+
+.search input{
+    background-color: var(--widget-background);
+    font-size: 30px;
+    padding: 12px;
+}
+
+#result-box{
+    height: 150px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+#result-box-software{
+    height: 150px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.structure {
+    align-items: start; /* Vertically center the items */
+}
+
+/* Optional: Adjust icon size and hover effect */
+.monitor-icon {
+    font-size: 1.8em; /* Adjust size as needed */
+}
+
+/* =============================================================================== */
+/* ==================================== DROP DOWN ================================ */
+/* =============================================================================== */
+
+.dropbtn { /* Style des DropDown */
+    background: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    width: -webkit-fill-available;
+    align-items: self-end;
+}
+.dropdown { /* Style du Curseur sur les DropDown */
+	cursor: pointer;
+}
+
+.mention_doc_id .dropdown-content { /* Données des Drop Down masqué */
+    display: none;
+    position: absolute;
+    z-index: 1;
+    width: auto;
+    padding: 9px;
+}
+
+.dropdown-content { /* Données des Drop Down masqué */
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    width: auto;
+    padding: 9px;
+}
+
+.dropdown-content a { /* Liens Données des Drop Down masqué */
+  color: #000;
+  font-size: 1rem;
+  margin: 4px;
+}
+
+.software-name{
+    color: red;
+}
+
+.software-list li::marker{
+    margin-right: 1ch;
+    color: red;
+}
+
+.list_software_doc_id{
+    list-style-type: none;
+}
+
+.number_mentions{
+    color: blue;
+}
+
+.mention_doc_id .material-symbols-outlined:hover{
+    color:red
+}
+
+/* =============================================================================== */
+/* ================================= DISAMBIGUATE ================================ */
+/* =============================================================================== */
+
+.search-software, .search-author{
+    border-radius: 10px;
+	background: #fff;
+	padding: 10px 15px;
+	border: 1px solid var(--effet-color);
+	margin: 10px;
+}
+
+#result-box-dis{
+}
+
+#software_target{
+    color: red;
+    display: inline-block;
+    border-bottom: 1px solid red;
+}
+
+#software-box, #title-box{
+    display: grid;
+    grid-template-columns: 20% 80%;
+}
+
+#card-box{
+    flex-wrap: wrap;
+    display: flex;
+    flex-direction: column;
+}
+
+#nodup-box, #software_card, #card-title-box, #nodup-title-box{
+    border-radius: 10px;
+    background: #fff;
+    padding: 10px 15px;
+    border: 1px solid var(--effet-color);
+    margin: 10px;
+    height: fit-content;
+}
+#nb-sofwdup, #nb-sofwnodup{
+    color: red;
+}
+
+@keyframes changeColor {
+    0% {background-color:  #FFFFFFFF;}
+    25% {background-color:  #b3679c;}
+    50% {background-color: #42a7e4;}
+    100% {background-color: #ffffff;}
+}
+
+
+/* Define the animation class */
+.animate-bounce {
+    animation: changeColor 2s ease;
+}
+
+.button_dup .material-symbols-outlined {
+            transition: transform 0.3s ease;
+            display: inline-block;
+
+.rotate-up {
+    transform: rotate(180deg);
+    color:red;
+}
+.rotate-down {
+    color:blue;
+    transform: rotate(0deg);
+}}
+
+.list-context .software_item {
+    color: red;
+    display: contents;
+}
+
+#loading{
+    display: contents;
+}
+
+.list-context{
+    padding : 5px;
+}
+
+/* Author route */
+
+
+.author_card{
+    margin: 10px;
+    border: 2px solid transparent;
+    box-shadow: 0 3px 4px #00000029;
+    font-family: "Poppins", sans-serif;
+    font-size: 1rem;
+    height: fit-content;
+    border-radius: 10px;
+    background-color: #ffffff;
+    margin-bottom: 5px;
+    padding:1rem;
+    width: 70%;
+}
+
+.author_card:hover {
+    background:
+    linear-gradient(var(--widget-background) 0 0) padding-box, /*this is your grey background*/
+    linear-gradient(to left, #b3679c, #42a7e4) border-box;
+    border: 2px solid transparent;
+    border-radius: 10px;
+}
+
+.author_card li{
+    margin-left: 50px;
+}
+
+.author_card .INRIA{
+    color: red;
+}
+
+.VALID{
+    color: green;
+    font-weight: bold;
+}
+
+.INCOMING{
+    color: blue;
+    font-weight: bold;
+}
+
+.OLD{
+    color: grey;
+    font-weight: bold;
+}
+
+/* =============================================================================== */
+/* ==================================== HOME ===================================== */
+/* =============================================================================== */
+
+.home-container{ /* Style Grid du block Main */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.6rem;
+    align-items: start;
+}
+
+.home-info{  /* Style widgets -> Pour Info j'ai groupé les 2 software et main pour simplifier */
+    background-color: var(--widget-background);
+    padding: 20px;
+    margin: 20px 0 0 0;
+    width: 100%;
+    height: 85vh;
+    overflow: auto;
+    position: relative;
+    font-family: 'Poppins', sans-serif;
+    border: 2px solid transparent;
+    box-shadow: 0 3px 4px #00000029;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar {
+            width: 16px;
+        }
+
+::-webkit-scrollbar-track {
+    border-radius: 8px;
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+    background-color: #42a7e4;
+}
+
+.home-info:hover{ /* Couleur des bordure du widgets en Hover */
+    background:
+    linear-gradient(var(--widget-background) 0 0) padding-box, /*this is your grey background*/
+    linear-gradient(to left, #b3679c, #42a7e4) border-box;
+    border: 2px solid transparent;
+    border-radius: 10px;
+}
+
+.home-info h1{ /* Texte des En-tête */
+  position: sticky;
+  top: 0;
+  width: auto;
+  z-index: 1;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 26px;
+}
+
+.home-info h1::before { /* Box des En-tête */
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: 0px;
+  right: 0px;
+  bottom: -15px;
+  z-index: -1;
+  background-color: var(--widget-background);
+}
+
+.home-info h1::after { /* Ligne sous le texte */
+  content: "";
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(2,0,36,0) 0%, rgb(46, 96, 131) 50%, rgba(255,255,255,0) 100%);
+  display: block;
+}
+
+.home-data{
+    display: grid;
+    justify-items: center;
+    justify-content: center;
+}
+
+.home-data h2{
+    align-items: flex-end;
+    display: flex;
+    font-size: 1.2rem;
+}
+
+.home-card-box{
+    padding-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.6rem;
+    overflow: auto;
+    justify-content: center;
+}
+
+.home-block .button-info {
+    position: absolute; /* Absolutely position the button */
+    top: 3px; /* Adjust as needed */
+    right: 3px; /* Align it to the right */
+    background-color: #ffffff;
+    color: blue;
+    border: none;
+    cursor: pointer;
+}
+
+.home-block{
+     position: relative;
+    border: 2px solid transparent;
+    box-shadow: 0 3px 4px #00000029;
+    font-family: "Poppins", sans-serif;
+    font-size: 1rem;
+    height: fit-content;
+    border-radius: 10px;
+    background-color: #ffffff;
+    margin-bottom: 5px;
+    padding:1rem;
+    max-width: 600px; /* Optional: set a max width */
+    height: fit-content; /* Adjust height based on content */
+}
+
+
+.home-block:hover{
+    background:
+    linear-gradient(var(--widget-background) 0 0) padding-box, /*this is your grey background*/
+    linear-gradient(to left, #b3679c, #42a7e4) border-box;
+    border: 2px solid transparent;
+    border-radius: 10px;
+}
+
+.home-block:hover .button-info{
+    background: #f7f7f7;
+}
+
+.timeline_container {
+    display: flex; /* Enable flexbox layout */
+    flex-direction: column;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    align-items: center; /* Center child items vertically */
+    position: relative; /* Allow absolute positioning of children */
+    height: 100vh; /* Full viewport height */
+}
+
+.timeline_container .time_block {
+    max-width: 600px; /* Optional: set a max width */
+    height: auto; /* Adjust height based on content */
+}
+
+.timeline_container .time_block.active {
+    opacity: 1; /* Show active block */
+}
+
+.timeline_container .time_img {
+    display: flex;
+    justify-content: center;
+}
+
+.timeline_container .time_img img {
+    width: 120px;
+    height: 120px;
+}
+
+.timeline_container .time_info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.time_info p span.docker {
+    background: linear-gradient(to right, #0C49C2, #086dd7);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+}
+
+.time_info p span.viz {
+    background: linear-gradient(to right, #42a7e4, #b3679c);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+}
+
+.time_info p span.sync {
+    background: linear-gradient(to right, #ff6a00, #ee0979);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+}
+
+.time_info p span.arango {
+    background: linear-gradient(to right, #5a6e3e, #74a82f);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+}
+
+.time_info p span.flask {
+    background: linear-gradient(to right, #004b6b, #037baf);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+}
+
+/* =============================================================================== */
+/* ==================================== DOCU ===================================== */
+/* =============================================================================== */
+
+.doc_container{
+     display: flex;
+    justify-content: space-between; /* Space out the columns */
+    gap: 40px;
+}
+
+.doc_abstract, .doc_affi, .doc_author,.doc_soft,.doc_stat{
+    border: 2px solid transparent;
+    box-shadow: 0 3px 4px #00000029;
+    font-family: "Poppins", sans-serif;
+    font-size: 1rem;
+    height: fit-content;
+    min-height: 440px;
+    max-height: 400px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    margin-bottom: 5px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    width: -webkit-fill-available;
+
+}
+.doc_stat:first-child h1{
+    text-align: center;
+    margin-bottom: 0px;
+}
+
+.doc_stat h1{
+    background-size: 50px;
+    position: sticky;
+    top: 0;
+    width: auto;
+    z-index: 1;
+    margin-bottom: 10px;
+}
+
+.doc_abstract h1, .doc_affi h1, .doc_author h1, doc_soft h1{
+    background-size: 50px;
+    top: 0;
+    width: auto;
+    z-index: 1;
+    margin-bottom: 10px;
+}
+
+.doc_stat .button-info {
+    position: absolute; /* Absolutely position the button */
+    top: -13px; /* Adjust as needed */
+    right: -13px; /* Align it to the right */
+    background-color: #ffffff;
+    color: blue;
+    border: none;
+    cursor: pointer;
+    border-radius: 50px;
+}
+
+.top_ul{
+    margin-left: 15px;
+    max-height: max-content;
+    overflow-y: auto;
+    padding: 0;
+    list-style-type: none;
+}
+
+.sofware_document_card{
+    padding-top: 25px;
+    padding-bottom: 25px;
+}
+
+.sofware_document_card .flex-container{
+    margin: 0px;
+}
+
+.sofware_document_card h2 {
+    text-align: left;
+}
+
+.software_document_card .titre-block:first-child  {
+    background: none;
+}
+
+/* =============================================================================== */
+/* ================================== SEARCH ===================================== */
+/* =============================================================================== */
+
+.active-filter{
+    background: linear-gradient(var(--widget-background) 0 0) padding-box, linear-gradient(to left, #b3679c, #42a7e4) border-box;
+    border: 2px solid transparent;
+}
+
+/* Container */
+#es-search {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 15vh;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* Search Bar */
+#es-searchBar {
+  width: 50%;
+  max-width: 600px;
+  padding: 14px 20px;
+  font-size: 18px;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+  outline: none;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+#es-searchBar:focus {
+  box-shadow: 0 1px 8px rgba(32, 33, 36, 0.4);
+  border-color: transparent;
+}
+
+/* Filter Buttons */
+.filter-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-buttons button {
+  padding: 10px 18px;
+  font-size: 14px;
+  border-radius: 20px;
+  background-color: #FFFFFF;
+  cursor: pointer;
+}
+
+
+/* Results area */
+#results {
+  margin-top: 30px;
+  width: 80%;
+  max-width: 800px;
+  min-height: 100px;
+  font-size: 16px;
+}
+
+/* Results Area */
+#results {
+  margin-top: 30px;
+  width: 80%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#results > a {
+  padding: 14px 20px;
+  background-color: #fff;
+  border: 2px solid transparent; /* always 2px to prevent shift */
+  border-radius: 12px;
+  color: black;
+}
+
+#results > a:hover {
+  color: #0C49C2;
+  background: linear-gradient(#fff, #fff) padding-box,
+              linear-gradient(to right, #42a7e4, #b3679c) border-box;
+}
+
+#results > a:hover.no-result {
+  color: black;
+  background: linear-gradient(#fff, #fff) padding-box,
+              linear-gradient(to right, #42a7e4, #b3679c) border-box;
+}
+
+
