@@ -4,6 +4,7 @@ from flask import url_for as flask_url_for
 # 🔧 Force every url_for() to include /software prefix
 def prefixed_url_for(endpoint, **values):
     url = flask_url_for(endpoint, **values)
+    print(f"[url_for] endpoint={endpoint} → {url}")
     # avoid double prefix if already has /software
     if not (url.startswith('/software') or url.startswith('/software_stat')):
         url = '/software' + url
