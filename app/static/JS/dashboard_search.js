@@ -190,6 +190,7 @@ function processFetchedData(data) {
     }
 
     const dataChunks = chunkArray(data, 50);
+    console.log("datachunk", dataChunks)
 
     function processChunk(chunkIndex) {
         if (chunkIndex >= dataChunks.length) {
