@@ -5,36 +5,35 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Ensure div_block is not empty
     if (div_block.length > 0) {
+        const pathParts = window.location.pathname.split('/');
+        const softwareName = decodeURIComponent(pathParts.pop() || '').trim();
+
+        if (!softwareName) return; // skip empty names
+
         if (url_info.startsWith('struct-')) {
             fetch(`/software/api/soft/${url_info}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                const title_block = document.createElement('div');
-                title_block.className = "titre-block";
-                const pathParts = window.location.pathname.split('/');
-                const softwareName = decodeURIComponent(pathParts.pop() || '');
-                title_block.innerHTML = `<h2 style="padding: 5px">${softwareName}</h2>`;
-                // Insert at the top of the div
-                div_block[0].insertBefore(title_block, div_block[0].firstChild);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    const title_block = document.createElement('div');
+                    title_block.className = "titre-block";
+                    title_block.innerHTML = `<h2 style="padding: 5px">${softwareName}</h2>`;
+                    div_block[0].insertBefore(title_block, div_block[0].firstChild);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
         } else {
             const title_block = document.createElement('div');
             title_block.className = "titre-block";
-            const pathParts = window.location.pathname.split('/');
-            const softwareName = decodeURIComponent(pathParts.pop() || '');
             title_block.innerHTML = `<h2 style="padding: 5px">${softwareName}</h2>`;
-            // Insert at the top of the div
             div_block[0].insertBefore(title_block, div_block[0].firstChild);
         }
-    };
+    }
 
     async function setupSoftwareSearch() {
         try {
