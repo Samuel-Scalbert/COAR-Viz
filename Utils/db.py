@@ -142,6 +142,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
             file_name, extension = os.path.splitext(file_name)
 
         if file_name in files_list_registered:
+            print(file_name)
             return False
         else:
             new_file = True
