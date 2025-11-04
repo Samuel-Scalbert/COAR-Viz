@@ -58,7 +58,7 @@ def insert_json():
         return jsonify({"error": "No file provided"}), 400
 
     file = request.files["file"]
-    hal_id = file.filename.replace(".software.json", "")
+    hal_id = request.files["document_id"]
 
     # Download HAL TEI XML
     url = "https://api.archives-ouvertes.fr/search/"
@@ -101,13 +101,6 @@ def insert_json():
                 "json_path": json_path
             }), 201
         elif inserted == False:
-            try:
-                if os.path.exists(xml_path):
-                    os.remove(xml_path)
-                if os.path.exists(json_path):
-                    os.remove(json_path)
-            except Exception as e:
-                print(f"Error deleting files: {e}")
             return jsonify({"status": "already registered", "file": file.filename}), 409
         else:
             return jsonify({"error": f"Database insertion failed: {str(inserted)}"}), 500
