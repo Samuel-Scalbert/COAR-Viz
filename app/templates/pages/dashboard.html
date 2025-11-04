@@ -90,10 +90,9 @@
 {% endblock %}
 
 {% block scripts %}
-
+    <script src="{{ url_for('static', filename='JS/dashboard_search.js') }}"></script>
     <script src="{{ url_for('static', filename='JS/charts.js') }}"></script>
     <script src="{{ url_for('static', filename='JS/chart_line.js') }}"></script>
-    <script src="{{ url_for('static', filename='JS/dashboard_search.js') }}"></script>
     <script src="{{ url_for('static', filename='JS/scripts.js') }}"></script>
 
     <script>generateCircleChart('#dashboard',{{data[0]['used']}},{{data[0]['created']}},{{data[0]['shared']}});</script>
