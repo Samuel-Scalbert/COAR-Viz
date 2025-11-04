@@ -13,6 +13,7 @@ function affi_type(str) {
 
 // Load structures and setup event listeners
 document.addEventListener('DOMContentLoaded', () => {
+    reorderSoftwareMentions();
     const searchDiv = document.querySelector('.structures');
     const currentPath = window.location.pathname;
 
@@ -29,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-
             // Define the desired order of institution types
             const typeOrder = [
                 "researchteam",        // Highest priority (appears at the top)
