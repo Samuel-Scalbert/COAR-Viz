@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function handleClick(softwareName) {
     // Navigate to a new URL, passing the software name as part of the path or query string
-    const url = `/software/software/${softwareName}`;
+    const url = `/software/software_stat/${softwareName}`;
     window.location.href = url;
 }
 
