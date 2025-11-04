@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 title_block.className = "titre-block";
                 const pathParts = window.location.pathname.split('/');
                 const softwareName = decodeURIComponent(pathParts.pop() || '');
-                title_block.innerHTML = `<h2 style="padding: 5px">${softwareName}/${data}</h2>`;
+                console.log(softwareName)
+                title_block.innerHTML = `<h2 style="padding: 5px">${softwareName}</h2>`;
 
                 // Insert at the top of the div
                 div_block[0].insertBefore(title_block, div_block[0].firstChild);
