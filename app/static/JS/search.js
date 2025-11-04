@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     else if (filter === 'software') {
-      resultsContainer.innerHTML = results.map(r => `<a href="/software/software/${r.name}">${r.name}</a>`).join('');
+      resultsContainer.innerHTML = results.map(r => `<a href="/software/software_stat/${r.name}">${r.name}</a>`).join('');
     }
 
     else if (filter === 'document') {
