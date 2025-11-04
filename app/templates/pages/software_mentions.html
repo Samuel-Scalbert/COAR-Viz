@@ -1,6 +1,6 @@
 {% extends "partials/conteneur.html" %}
+<script src="{{ url_for('static', filename='JS/software.js') }}"></script>
 {% block body %}
-
 <div class="software_canva_info" style="margin-left: 20px;">
     <div class="search">
         <div class="dropdown" id="search-box">
@@ -98,10 +98,14 @@
     </script>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 <script>
     generateBubbleChart('#software');
     document.addEventListener('DOMContentLoaded', function() {
             generateCircleChart('#canva_software', {{data[0]['used']}},{{data[0]['created']}},{{data[0]['shared']}});
         });
 </script>
+<script src="{{ url_for('static', filename='JS/software.js') }}"></script>
 {% endblock %}
