@@ -49,7 +49,7 @@ async function generateBubbleChart(selector) {
         return; // Stop execution if data is invalid
     }
 
-    console.log("full_dataset", full_dataset);
+    // console.log("full_dataset", full_dataset);
 
     // Variables to control the chart's axis range
     let xdatamin = full_dataset[1] - 1;
@@ -66,7 +66,7 @@ async function generateBubbleChart(selector) {
         return; // Stop execution if parsedData is not in the expected format
     }
 
-    console.log('type', typeof parsedData);
+    // console.log('type', typeof parsedData);
 
     const chartConfig = {
         type: 'bubble',
@@ -224,7 +224,7 @@ async function showStructures(hal_id_list, software) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data_insti = await response.json();
-                    console.log(data_insti)
+                    // console.log(data_insti)
                     // Process and add institutions to the DOM
                     data_insti.forEach(insti => {
                         // Check if the structure with the same 'ref' already exists
