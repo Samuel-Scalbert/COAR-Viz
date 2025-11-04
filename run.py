@@ -5,7 +5,7 @@ from flask import url_for as flask_url_for
 def prefixed_url_for(endpoint, **values):
     url = flask_url_for(endpoint, **values)
     # avoid double prefix if already has /software
-    if not url.startswith('/software'):
+    if not (url.startswith('/software') or url.startswith('/software_stat')):
         url = '/software' + url
     return url
 
