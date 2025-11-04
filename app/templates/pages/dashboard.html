@@ -33,7 +33,7 @@
                         {% for software, docs in data[4].items() %}
                                 <div class="mention_doc_id" id="{{ software|sanitize}}">
                                     <div class="dropdown">
-                                    <button class="dropbtn" number="{{ docs[1] }}">{{ software }} <span class="number_mentions">({{ docs[1] }})</span></span><span class="material-symbols-outlined" style="vertical-align: bottom;margin-left: auto;"><a href="/software/software/{{software}}">data_check</a></button>
+                                    <button class="dropbtn" number="{{ docs[1] }}">{{ software }} <span class="number_mentions">({{ docs[1] }})</span></span><span class="material-symbols-outlined" style="vertical-align: bottom;margin-left: auto;"><a href="/software/software_stat/{{software}}">data_check</a></button>
                                     <div class="dropdown-content">
                                     <lu class="list_software_doc_id">
                                 {% for doc in docs[0] %}
@@ -52,7 +52,7 @@
                             {% for software, docs in data[6].items() %}
                                 <div class="mention_doc_id" id="{{ software|sanitize}}">
                                     <div class="dropdown">
-                                    <button class="dropbtn" number="{{ docs[1] }}">{{ software }} <span class="number_mentions">({{ docs[1] }})</span><span class="material-symbols-outlined" style="vertical-align: bottom;margin-left: auto;"><a href="/software/software/{{software}}">data_check</a></span>
+                                    <button class="dropbtn" number="{{ docs[1] }}">{{ software }} <span class="number_mentions">({{ docs[1] }})</span><span class="material-symbols-outlined" style="vertical-align: bottom;margin-left: auto;"><a href="/software/software_stat/{{software}}">data_check</a></span>
                                     </button>
                                     <div class="dropdown-content">
                                     <lu class="list_software_doc_id">
@@ -72,7 +72,7 @@
                         {% for software, docs in data[5].items() %}
                                 <div class="mention_doc_id" id="{{software|sanitize}}">
                                     <div class="dropdown">
-                                    <button class="dropbtn" number="{{ docs[1] }}">{{ software }} <span class="number_mentions">({{ docs[1] }})</span></span><span class="material-symbols-outlined" style="vertical-align: bottom;margin-left: auto;"><a href="/software/software/{{software}}">data_check</a></button>
+                                    <button class="dropbtn" number="{{ docs[1] }}">{{ software }} <span class="number_mentions">({{ docs[1] }})</span></span><span class="material-symbols-outlined" style="vertical-align: bottom;margin-left: auto;"><a href="/software/software_stat/{{software}}">data_check</a></button>
                                     <div class="dropdown-content">
                                     <lu class="list_software_doc_id">
                                     {% for doc in docs[0] %}
