@@ -233,7 +233,7 @@ function reorderSoftwareMentions() {
 
     listSoftwareContainers.forEach(container => {
         const softwareDivs = Array.from(container.getElementsByClassName("mention_doc_id"));
-
+        console.log(softwareDivs)
         const redSoftware = [];
         const otherSoftware = [];
 
