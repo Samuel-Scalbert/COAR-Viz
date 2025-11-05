@@ -21,4 +21,4 @@ COPY . /SOFTware-Viz/
 EXPOSE 8080
 
 # Specify the command to run on container start
-CMD ["python", "run.py"]
+CMD ["python", "-u", "run.py"]
