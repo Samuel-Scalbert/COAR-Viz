@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Fetch notification counts from Flask
     fetch("/software/api/notification_count")
-        .then(response => response.json())
         .then(data => {
             const labels = [];
             const notificationData = [];
