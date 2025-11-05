@@ -89,13 +89,11 @@ def find_ancestor_paths(current_affiliation_id, ns, tree):
     return all_paths  # Return all paths for the current structure
 
 def insert_json_db(data_path_json,data_path_xml,db):
-
+    print('la')
     if not is_elasticsearch_alive():
         return "Elasticsearch is not alive (launch the docker)"
 
-    software_document = []
     list_errors = []
-    #db.dropAllCollections()
     workbook = load_workbook(filename='./app/static/data/Logiciels_Blacklist_et_autres_remarques.xlsx')
     sheet = workbook.active
     data = []
@@ -105,12 +103,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
     for row in data[1:]:
         blacklist.append(row[0])
 
-    #load the urls verified with SH
-    try:
-        with open('app/static/data/url_verified_with_SH/urls.json', 'r') as file:
-            urls_verified_sh = json.load(file)
-    except FileNotFoundError:
-        urls_verified_sh = []
+    urls_verified_sh = []
 
     # Create or retrieve collections
     documents_collection = check_or_create_collection(db, 'documents')
