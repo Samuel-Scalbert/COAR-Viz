@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 date.setDate(date.getDate() - i);
                 labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
             }
-
+            let notificationDatah = [null, null, NaN, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 2]
             const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
             const chartData = {
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 datasets: [
                     {
                         label: 'Notifications (last 30 days)',
-                        data: notificationData,
+                        data: notificationDatah,
                         fill: false,
                         spanGaps: true, // show gaps for NaN
                         segment: {
