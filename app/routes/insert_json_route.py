@@ -94,8 +94,10 @@ def insert_json():
     except Exception as e:
         return jsonify({"error": f"Exception while saving JSON: {str(e)}"}), 500
 
+    print(os.listdir("./app/static/data/json"), os.listdir("./app/static/data/xml"))
+
     try:
-        print(insert_json_db("./app/static/data/json", "./app/static/data/xml", db))
+        insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
         print('id:',hal_id)
         listinserted = db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True, batchSize=2000)
         print('list inserted:',listinserted)
