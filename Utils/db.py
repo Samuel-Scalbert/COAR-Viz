@@ -136,9 +136,10 @@ def insert_json_db(data_path_json,data_path_xml,db):
     new_file = False
 
     for data_file_xml in tqdm(data_xml_list):
+        print(f"Insertion of the file {data_file_xml}")
         file_path = f'{data_path_xml}/{data_file_xml}'
         file_name = os.path.basename(file_path)
-        print(f"Insertion of the file {file_name}")
+        print(f"Insertion of the file {file_path}")
         while "." in file_name:
             file_name, extension = os.path.splitext(file_name)
         json_path = f'{data_path_json}/{file_name}.json'
