@@ -293,28 +293,26 @@ def str_from_halid(struc_id):
 
 @app.route("/api/notification_count")
 def notification_count():
-
     list_nb_of_notif = []
 
-    # Get today's date
     today = date.today()
-
-    # Generate list of the last 30 days (including today)
     last_30_days = [(today - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(30)]
+    last_30_days = list(reversed(last_30_days))  # oldest → newest
 
-    # Optional: reverse so oldest date first
-    last_30_days = list(reversed(last_30_days))
     for day in last_30_days:
         query = f'''
-        FOR nb in notifications
+        FOR nb IN notifications
             FILTER nb.date == "{day}"
             RETURN nb.count
-                        '''
+        '''
         data = db.AQLQuery(query, rawResults=True, batchSize=1)
-        data = data[0:]
+
         if len(data) == 0:
-            data = float("NaN")
+            count = float("NaN")  # missing value
         else:
-            data = data[0]
-        list_nb_of_notif.append(data)
-    return list_nb_of_notif
+            count = data[0]
+
+        list_nb_of_notif.append(count)
+
+    # Return JSON with NaN allowed
+    return Response(json.dumps(list_nb_of_notif, allow_nan=True), mimetype="application/json")
