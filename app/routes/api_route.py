@@ -309,7 +309,7 @@ def notification_count():
         data = db.AQLQuery(query, rawResults=True, batchSize=1)
 
         if len(data) == 0:
-            count = float("NaN")  # missing value
+            count = None
         else:
             count = data[0]
 
