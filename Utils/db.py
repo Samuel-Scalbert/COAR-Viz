@@ -130,7 +130,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
     for data_file_xml in data_xml_list:
         file_path = f'{data_path_xml}/{data_file_xml}'
         file_name = os.path.basename(file_path)
-        print(f"Insertion of the file {file_path}", flush=True)
         while "." in file_name:
             file_name, extension = os.path.splitext(file_name)
         json_path = f'{data_path_json}/{file_name}.json'
