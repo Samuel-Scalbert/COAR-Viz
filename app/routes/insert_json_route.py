@@ -85,15 +85,13 @@ def insert_json():
         return jsonify({"error": f"Exception while saving JSON: {str(e)}"}), 500
 
     try:
-        inserted = insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
+        insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
+        print(hal_id)
+        print(db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True, batchSize=2000))
+        files_registered = db.AQLQuery(f'FOR hal_id in documents filter hal_id.file_hal_id == "{hal_id}" RETURN hal_id._id', rawResults=True, batchSize=2000)
+        print(files_registered)
+        inserted = True
         if inserted == True:
-            try:
-                if os.path.exists(xml_path):
-                    os.remove(xml_path)
-                if os.path.exists(json_path):
-                    os.remove(json_path)
-            except Exception as e:
-                print(f"Error deleting files: {e}")
             return jsonify({
                 "status": "inserted",
                 "file": file.filename,

@@ -140,12 +140,16 @@ def insert_json_db(data_path_json,data_path_xml,db):
         file_name = os.path.basename(file_path)
         while "." in file_name:
             file_name, extension = os.path.splitext(file_name)
-
+        json_path = f'{data_path_json}/{file_name}.json'
         if file_name in files_list_registered:
-            print(file_name)
-            return False
-        else:
-            new_file = True
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                if os.path.exists(json_path):
+                    os.remove(json_path)
+            except Exception as e:
+                print(f"Error deleting files: {e}")
+            pass
 
         url = "https://api.archives-ouvertes.fr/search/"
         params = {
@@ -229,7 +233,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
             # SOFTWARE -----------------------------------------------------
 
             if f"{file_name}.json" in data_json_files:
-                with open(f'{data_path_json}/{file_name}.json', 'r') as json_file:
+                with open(json_path, 'r') as json_file:
                     data_json = json.load(json_file)
                     data_json_get_mentions = data_json.get("mentions")
 
