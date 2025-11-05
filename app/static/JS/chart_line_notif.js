@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    fetch("/api/notification_count")
+    fetch("/software/api/notification_count")
         .then(response => response.json())
         .then(notificationData => {
             // Generate labels for the last 30 days (MM/DD)
