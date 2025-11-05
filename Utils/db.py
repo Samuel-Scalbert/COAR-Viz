@@ -127,8 +127,10 @@ def insert_json_db(data_path_json,data_path_xml,db):
     new_file = False
 
     print(data_xml_list)
+    print(len(data_xml_list))
 
     for data_file_xml in tqdm(data_xml_list):
+        print(data_xml_list)
         print(f"Insertion of the file {data_file_xml}")
         file_path = f'{data_path_xml}/{data_file_xml}'
         file_name = os.path.basename(file_path)
@@ -462,3 +464,4 @@ def insert_json_db(data_path_json,data_path_xml,db):
                         edge_auth_rel_struc['_from'] = author_document_id
                         edge_auth_rel_struc['_to'] = list_relation_documents._id
                         edge_auth_rel_struc.save()
+    print('rien')
