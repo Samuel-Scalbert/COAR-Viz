@@ -130,8 +130,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
     print(len(data_xml_list))
 
     for data_file_xml in data_xml_list:
-        print(data_xml_list, flush=True)
-        print(f"Insertion of the file {data_file_xml}", flush=True)
         file_path = f'{data_path_xml}/{data_file_xml}'
         file_name = os.path.basename(file_path)
         print(f"Insertion of the file {file_path}", flush=True)
@@ -145,7 +143,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
                 if os.path.exists(json_path):
                     os.remove(json_path)
             except Exception as e:
-                print(f"Error deleting files: {e}")
+                print(f"Error deleting files: {e}", flush=True)
             pass
 
         url = "https://api.archives-ouvertes.fr/search/"
