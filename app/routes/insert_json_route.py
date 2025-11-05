@@ -54,6 +54,7 @@ def save_json(file, folder="./app/static/data/json"):
 
 @app.route('/insert_json', methods=['POST'])
 def insert_json():
+    print(request.files)
     if "file" not in request.files:
         return jsonify({"error": "No file provided"}), 400
 
