@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 date.setDate(date.getDate() - i);
                 labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
             }
-            const notificationDatah = [1, 4, 7, 2, null, 5, null, NaN, NaN, NaN, 7, NaN, NaN, 8, NaN, 4, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 2]
+            const notificationDatah = [1, 4, 7, 2, null, 5, null, null, null, null, 7, null, null, 8, null, 4, null, null, null, null, null, null, null, null, null, null, null, null, null, 2]
             const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
             const chartData = {
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         label: 'Notifications (last 30 days)',
                         data: notificationDatah,
                         fill: false,
-                        spanGaps: true, // show gaps for NaN
+                        spanGaps: true, // show gaps for null
                         segment: {
                             borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)'),
                             borderDash: ctx => skipped(ctx, [6, 6]),
