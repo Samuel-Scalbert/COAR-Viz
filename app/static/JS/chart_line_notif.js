@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 date.setDate(date.getDate() - i);
                 labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
             }
-            const notificationDatah = [1, NaN, NaN, 2, NaN, 5, NaN, NaN, NaN, NaN, 7, NaN, NaN, 8, NaN, 4, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 2]
+            const notificationDatah = [1, 4, 7, 2, null, 5, null, NaN, NaN, NaN, 7, NaN, NaN, 8, NaN, 4, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 2]
             const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
             const chartData = {
