@@ -8,6 +8,22 @@ from app.app import app, db
 from Utils.db import insert_json_db
 import re
 
+@app.before_request
+def debug_request():
+    print("=== Incoming Request Debug ===")
+    print("Path:", request.path)
+    print("Method:", request.method)
+    print("Content-Type:", request.content_type)
+    print("Headers:", dict(request.headers))
+    print("Form keys:", list(request.form.keys()))
+    print("Files keys:", list(request.files.keys()))
+    try:
+        # This will print JSON body if present (without breaking anything)
+        print("JSON body:", request.get_json(silent=True))
+    except Exception as e:
+        print("JSON parse error:", e)
+    print("================================\n")
+
 
 def ensure_folder(path):
     os.makedirs(path, exist_ok=True)
@@ -59,7 +75,7 @@ def insert_json():
         return jsonify({"error": "No file provided"}), 400
 
     file = request.files["file"]
-    hal_id = request.files["document_id"]
+    hal_id = request.form.get("document_id")
 
     # Download HAL TEI XML
     url = "https://api.archives-ouvertes.fr/search/"
