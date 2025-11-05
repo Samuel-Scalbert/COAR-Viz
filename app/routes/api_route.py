@@ -307,7 +307,7 @@ def notification_count():
     for day in last_30_days:
         query = f'''
         FOR nb in notifications
-            FILTER nb.date == {day}
+            FILTER nb.date == "{day}"
             RETURN nb.count
                         '''
         data = db.AQLQuery(query, rawResults=True, batchSize=1)
