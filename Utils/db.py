@@ -138,6 +138,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
     for data_file_xml in tqdm(data_xml_list):
         file_path = f'{data_path_xml}/{data_file_xml}'
         file_name = os.path.basename(file_path)
+        print(f"Insertion of the file {file_name}")
         while "." in file_name:
             file_name, extension = os.path.splitext(file_name)
         json_path = f'{data_path_json}/{file_name}.json'
@@ -285,40 +286,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
                     COLLECT softwareName = software.software_name.normalizedForm WITH COUNT INTO count
                     RETURN {{ softwareName, count }}
                 """
-
-            # Cleaning the software for the dashboard (maybe obsolete now) -----------------------------------------
-
-                '''# Execute the AQL query to get software names and counts
-                all_software_dict = db.AQLQuery(query, rawResults=True)
-
-                # Fetch distinct software names
-                distinct_query = f"""
-                FOR doc IN edge_software
-                    FILTER doc._from == "{document_document._id}"
-                    LET software = DOCUMENT(doc._to)
-                    RETURN DISTINCT software.software_name.normalizedForm
-                """
-                software_name_list = db.AQLQuery(distinct_query, rawResults=True)
-
-                # Convert software names and counts to a dictionary
-                dict_software = {software_dict['softwareName']: software_dict['count'] for software_dict in
-                                 all_software_dict}
-
-                # Process software names containing hyphens and update as needed
-                for software_name in software_name_list:
-                    if "-" in software_name:
-                        software_name_cleaned = software_name.replace('-', '')
-                        if software_name_cleaned in dict_software and dict_software[software_name] < dict_software[
-                            software_name_cleaned]:
-                            # Example: Update software name in the database
-                            update_query = f"""
-                            FOR doc IN edge_software
-                                FILTER doc._from == "{document_document._id}"
-                                LET software = DOCUMENT(doc._to)
-                                FILTER software.software_name.normalizedForm == "{software_name}"
-                                UPDATE software WITH {{ software_name: {{ normalizedForm: "{software_name_cleaned}" }} }} IN softwares
-                            """
-                            db.AQLQuery(update_query)'''
 
             # AUTHORS -----------------------------------------------------
 
@@ -501,5 +468,3 @@ def insert_json_db(data_path_json,data_path_xml,db):
                         edge_auth_rel_struc['_from'] = author_document_id
                         edge_auth_rel_struc['_to'] = list_relation_documents._id
                         edge_auth_rel_struc.save()
-
-    return True
