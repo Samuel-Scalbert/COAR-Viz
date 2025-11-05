@@ -5,7 +5,7 @@ from flask import request, jsonify
 from xml.sax.saxutils import unescape
 from xml.dom import minidom
 from app.app import app, db
-from Utils.db import insert_json_db
+from Utils.db import insert_json_db, update_nb_notification
 import re
 
 '''@app.before_request
@@ -94,8 +94,6 @@ def insert_json():
     except Exception as e:
         return jsonify({"error": f"Exception while saving JSON: {str(e)}"}), 500
 
-    print(os.listdir("./app/static/data/json"), os.listdir("./app/static/data/xml"))
-
     try:
         files_registered = db.AQLQuery(f'FOR hal_id in documents filter hal_id.file_hal_id == "{hal_id}" RETURN hal_id._id', rawResults=True, batchSize=2000)
         if len(files_registered) >= 1:
@@ -103,13 +101,14 @@ def insert_json():
         else:
             inserted = True
 
-        print(insert_json_db("./app/static/data/json", "./app/static/data/xml", db))
+        insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
 
         print('id:',hal_id)
         listinserted = db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True, batchSize=2000)
         print('list inserted:',listinserted)
 
         if inserted == True:
+            update_nb_notification(db)
             try:
                 if os.path.exists(xml_path):
                     os.remove(xml_path)

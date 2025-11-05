@@ -1,14 +1,11 @@
 import os
 import json
-from logging import exception
-
-from tqdm import tqdm
+from pyArango.theExceptions import AQLQueryError
 import xml.etree.ElementTree as ET
-import requests
 from openpyxl import load_workbook
 from Utils.TEI_to_JSON import transformer_TEI_JSON
-from Utils.elastic_search import sync_to_elasticsearch
 import requests
+from datetime import date
 
 def is_elasticsearch_alive(host="http://172.19.0.1", port=9200, timeout=3):
     url = f"{host}:{port}/_cluster/health"
@@ -87,6 +84,31 @@ def find_ancestor_paths(current_affiliation_id, ns, tree):
             all_paths.append(
                 [current_affiliation_id] + path)  # Create a separate path for each relation
     return all_paths  # Return all paths for the current structure
+
+def update_nb_notification(db):
+    notifications_collection = check_or_create_collection(db, 'notifications')
+    # Get today's date as YYYY-MM-DD
+    today = date.today()
+    today_str = today.strftime("%Y-%m-%d")
+
+    try:
+        # UPSERT in ArangoDB: insert if not exists, update if exists
+        query = f"""
+        UPSERT {{ date: "{today_str}" }}
+        INSERT {{ date: "{today_str}", count: 1 }}
+        UPDATE {{ count: OLD.count + 1 }} IN notifications
+        RETURN NEW
+        """
+        result = db.AQLQuery(query, rawResults=True)
+        print(f"✅ Updated notification count for {today_str}: {result}")
+        return result
+
+    except AQLQueryError as e:
+        print(f"⚠️ AQL error while updating notifications: {e}")
+        return None
+    except Exception as e:
+        print(f"⚠️ Unexpected error in update_nb_notification: {e}")
+        return None
 
 def insert_json_db(data_path_json,data_path_xml,db):
     if not is_elasticsearch_alive():
