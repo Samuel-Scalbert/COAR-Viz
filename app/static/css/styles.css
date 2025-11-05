@@ -751,6 +751,11 @@ main .analyse{ /* Style Grid du block Main */
     border-radius: 10px;
 }
 
+#lineChartNotif{
+    width: -webkit-fill-available;
+    height: -webkit-fill-available;
+}
+
 ::-webkit-scrollbar {
             width: 16px;
         }
