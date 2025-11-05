@@ -17,11 +17,6 @@ def debug_request():
     print("Headers:", dict(request.headers))
     print("Form keys:", list(request.form.keys()))
     print("Files keys:", list(request.files.keys()))
-    try:
-        # This will print JSON body if present (without breaking anything)
-        print("JSON body:", request.get_json(silent=True))
-    except Exception as e:
-        print("JSON parse error:", e)
     print("================================\n")
 
 
@@ -105,7 +100,7 @@ def insert_json():
         insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
         print(hal_id)
         print(db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True, batchSize=2000))
-        files_registered = db.AQLQuery(f'FOR hal_id in documents filter hal_id.file_hal_id == "{hal_id}" RETURN hal_id._id', rawResults=True, batchSize=2000)
+        files_registered = db.AQLQuery(f'FOR hal_id in documents filter hal_id.file_hal_id == {hal_id} RETURN hal_id._id', rawResults=True, batchSize=2000)
         print(files_registered)
         inserted = True
         if inserted == True:
