@@ -102,7 +102,7 @@ def insert_json():
         print('id:',hal_id)
         listinserted = db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True, batchSize=2000)
         print('list inserted:',listinserted)
-        files_registered = db.AQLQuery(f'FOR hal_id in documents filter hal_id.file_hal_id == {hal_id} RETURN hal_id._id', rawResults=True, batchSize=2000)
+        files_registered = db.AQLQuery(f'FOR hal_id in documents filter hal_id.file_hal_id == "{hal_id}" RETURN hal_id._id', rawResults=True, batchSize=2000)
         print('answer query:',files_registered)
         inserted = True
         if inserted == True:
