@@ -314,5 +314,7 @@ def notification_count():
         data = data[0:]
         if len(data) == 0:
             data = float("NaN")
+        else:
+            data = data[0]
         list_nb_of_notif.append(data)
     return list_nb_of_notif
