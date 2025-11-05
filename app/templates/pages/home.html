@@ -148,10 +148,12 @@ The objective of this tool is to give an outlook of the source code cited in the
         </div>
         </div>
     </div>
+<canvas id="lineChartNotif"></canvas>
 </main>
 </div>
 {% endblock %}
 
 {% block scripts %}
 
+  <script src="{{ url_for('static', filename='./JS/chart_line_notif.js') }}"></script>
 {% endblock %}
