@@ -89,7 +89,6 @@ def find_ancestor_paths(current_affiliation_id, ns, tree):
     return all_paths  # Return all paths for the current structure
 
 def insert_json_db(data_path_json,data_path_xml,db):
-    print('la')
     if not is_elasticsearch_alive():
         return "Elasticsearch is not alive (launch the docker)"
 
@@ -97,13 +96,11 @@ def insert_json_db(data_path_json,data_path_xml,db):
     workbook = load_workbook(filename='./app/static/data/Logiciels_Blacklist_et_autres_remarques.xlsx')
     sheet = workbook.active
     data = []
-    print('la')
     for row in sheet.iter_rows(values_only=True):
         data.append(row)
     blacklist = []
     for row in data[1:]:
         blacklist.append(row[0])
-    print('la')
     urls_verified_sh = []
 
     # Create or retrieve collections
@@ -128,7 +125,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
     dict_registered = {}
     dict_edge_author = {}
     new_file = False
-    print('lafin')
+    print(data_xml_list)
     for data_file_xml in tqdm(data_xml_list):
         print(f"Insertion of the file {data_file_xml}")
         file_path = f'{data_path_xml}/{data_file_xml}'
