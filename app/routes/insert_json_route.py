@@ -65,7 +65,6 @@ def save_json(file, folder="./app/static/data/json"):
 
 @app.route('/insert_json', methods=['POST'])
 def insert_json():
-    print(request.files)
     if "file" not in request.files:
         return jsonify({"error": "No file provided"}), 400
 
@@ -81,7 +80,6 @@ def insert_json():
         params = {"q": f"halId_id:{hal_id}", "fl": "label_xml", "wt": "xml-tei"}
     try:
         response = requests.get(url, params=params, timeout=30)
-        print(response.url)
         if response.status_code != 200:
             return jsonify(
                 {"error": f"Could not download XML for the file {hal_id}, status code: {response.status_code}"}), 500
@@ -97,14 +95,21 @@ def insert_json():
         return jsonify({"error": f"Exception while saving JSON: {str(e)}"}), 500
 
     try:
+        insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
         print('id:',hal_id)
         listinserted = db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True, batchSize=2000)
         print('list inserted:',listinserted)
         files_registered = db.AQLQuery(f'FOR hal_id in documents filter hal_id.file_hal_id == {hal_id} RETURN hal_id._id', rawResults=True, batchSize=2000)
         print('answer query:',files_registered)
-        insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
         inserted = True
         if inserted == True:
+            try:
+                if os.path.exists(xml_path):
+                    os.remove(xml_path)
+                if os.path.exists(json_path):
+                    os.remove(json_path)
+            except Exception as e:
+                print(f"Error deleting files: {e}")
             return jsonify({
                 "status": "inserted",
                 "file": file.filename,
