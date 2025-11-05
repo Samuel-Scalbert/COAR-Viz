@@ -8,7 +8,7 @@ from app.app import app, db
 from Utils.db import insert_json_db
 import re
 
-@app.before_request
+'''@app.before_request
 def debug_request():
     print("=== Incoming Request Debug ===")
     print("Path:", request.path)
@@ -17,7 +17,7 @@ def debug_request():
     print("Headers:", dict(request.headers))
     print("Form keys:", list(request.form.keys()))
     print("Files keys:", list(request.files.keys()))
-    print("================================\n")
+    print("================================\n")'''
 
 
 def ensure_folder(path):

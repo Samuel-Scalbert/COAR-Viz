@@ -460,4 +460,3 @@ def insert_json_db(data_path_json,data_path_xml,db):
                         edge_auth_rel_struc['_from'] = author_document_id
                         edge_auth_rel_struc['_to'] = list_relation_documents._id
                         edge_auth_rel_struc.save()
-    print('rien')
