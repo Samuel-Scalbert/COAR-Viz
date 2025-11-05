@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Notifications (last 30 days)',
                         data: notificationData,
                         fill: false,
                         spanGaps: true, // show gaps for null
