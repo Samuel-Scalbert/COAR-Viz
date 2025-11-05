@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 date.setDate(date.getDate() - i);
                 labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
             }
+
             const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
             const chartData = {
@@ -31,13 +32,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 type: 'line',
                 data: chartData,
                 options: {
+                    plugins: {
+                        title: {
+                            display: false // Remove chart title
+                        },
+                        datalabels: { display: false }
+                    },
                     fill: false,
                     radius: 5,
                     interaction: { intersect: false },
-                    plugins: { datalabels: { display: false } },
                     scales: {
-                        x: { display: true, title: { display: true, text: 'Date' } },
-                        y: { display: true, title: { display: true, text: 'Number of Notifications' }, beginAtZero: true }
+                        x: {
+                            display: true
+                        },
+                        y: {
+                            display: true,
+                            beginAtZero: true,
+                            ticks: {
+                                // Force integer values
+                                callback: function(value) {
+                                    return Number.isInteger(value) ? value : null;
+                                }
+                            }
+                        }
                     }
                 }
             };
