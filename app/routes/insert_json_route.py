@@ -70,6 +70,7 @@ def insert_json():
 
     file = request.files["file"]
     hal_id = request.form.get("document_id")
+    hal_id = hal_id.replace('"', "")
 
     # Download HAL TEI XML
     url = "https://api.archives-ouvertes.fr/search/"
