@@ -877,6 +877,7 @@ main .analyse{ /* Style Grid du block Main */
 .timeline_container .time_block {
     max-width: 600px; /* Optional: set a max width */
     height: auto; /* Adjust height based on content */
+    min-width: -webkit-fill-available;
 }
 
 .timeline_container .time_block.active {
