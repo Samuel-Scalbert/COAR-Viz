@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         },
                         y: {
                             display: true,
+                            title: { display: true, text: 'Number of Notifications'},
                             beginAtZero: true,
                             ticks: {
                                 // Force integer values
