@@ -142,7 +142,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
                     os.remove(json_path)
             except Exception as e:
                 print(f"Error deleting files: {e}", flush=True)
-            pass
+            continue
 
         url = "https://api.archives-ouvertes.fr/search/"
         params = {
