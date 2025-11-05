@@ -3,6 +3,7 @@ from Utils.disambiguate import desambiguate_from_software
 from Utils.author import author_info_from_id
 from flask import jsonify, Response
 from datetime import date, timedelta
+import json
 
 @app.route('/api/disambiguate/list_software')
 def list_software():
