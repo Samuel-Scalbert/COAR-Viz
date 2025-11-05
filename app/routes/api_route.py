@@ -311,6 +311,7 @@ def notification_count():
             RETURN nb.count
                         '''
         data = db.AQLQuery(query, rawResults=True, batchSize=1)
+        data = data[0:]
         if len(data) == 0:
             data = float("NaN")
         list_nb_of_notif.append(data)
