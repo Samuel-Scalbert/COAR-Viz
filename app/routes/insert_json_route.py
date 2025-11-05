@@ -98,7 +98,7 @@ def insert_json():
     print(os.listdir("./app/static/data/json"), os.listdir("./app/static/data/xml"))
 
     try:
-        insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
+        print(insert_json_db("./app/static/data/json", "./app/static/data/xml", db))
         print('id:',hal_id)
         listinserted = db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True, batchSize=2000)
         print('list inserted:',listinserted)
