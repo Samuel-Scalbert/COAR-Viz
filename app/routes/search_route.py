@@ -149,9 +149,16 @@ def search_url():
 
     response = es.search(index="urls", body=query, size=100)
 
-    # Return only document IDs
-    results = [{"doc_id": hit["_source"]["doc_id"]} for hit in response["hits"]["hits"]]
+    # Return both document ID and URL
+    results = [
+        {
+            "doc_id": hit["_source"]["doc_id"],
+            "url": hit["_source"]["url"]
+        }
+        for hit in response["hits"]["hits"]
+    ]
 
     return jsonify(results)
+
 
 
