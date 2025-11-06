@@ -287,9 +287,9 @@ def sync_to_elasticsearch(db):
 
     # Fetch URLs from 'softwares' collection and include only doc_id
     cursor = db.AQLQuery('''
-        FOR software IN softwares
-            FILTER HAS(software, "url") && software.url != null
-            RETURN DISTINCT {
+        FOR url_soft IN softwares
+            FILTER url_soft.url != null
+            RETURN DISTINCT url_soft.url {
                 doc_id: software._id,
                 url: software.url
             }
