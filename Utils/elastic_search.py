@@ -290,7 +290,7 @@ def sync_to_elasticsearch(db):
         FOR url_soft IN softwares
             FILTER url_soft.url != null
             RETURN DISTINCT url_soft.url {
-                doc_id: software._id,
+                doc_id: url_soft._id,
                 url: software.url
             }
     ''', rawResults=True)
