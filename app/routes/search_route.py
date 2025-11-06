@@ -131,3 +131,27 @@ def search_structures():
 
     return jsonify(results)
 
+@app.route('/api/search_url')
+def search_url():
+    es = Elasticsearch("http://elasticsearch:9200")
+    query_str = request.args.get("q", "").lower().strip()
+    if not query_str:
+        return jsonify({"error": "Missing 'q' query parameter"}), 400
+
+    # Simple prefix search on URL field
+    query = {
+        "query": {
+            "prefix": {
+                "url": query_str
+            }
+        }
+    }
+
+    response = es.search(index="urls", body=query, size=100)
+
+    # Return only document IDs
+    results = [{"doc_id": hit["_source"]["doc_id"]} for hit in response["hits"]["hits"]]
+
+    return jsonify(results)
+
+
