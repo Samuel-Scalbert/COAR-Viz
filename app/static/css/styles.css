@@ -904,7 +904,11 @@ main .analyse{ /* Style Grid du block Main */
     align-items: center;
 }
 
-.time_info p span.docker, #waiting_for_the_answer {
+#waiting_for_the_answer {
+    color: black;
+}
+
+.time_info p span.docker{
     background: linear-gradient(to right, #0C49C2, #086dd7);
     -webkit-text-fill-color: transparent;
     -webkit-background-clip: text;
