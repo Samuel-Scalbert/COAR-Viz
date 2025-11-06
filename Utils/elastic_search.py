@@ -291,7 +291,7 @@ def sync_to_elasticsearch(db):
             FILTER url_soft.url != null
             RETURN DISTINCT {
                 doc_id: url_soft._id,
-                url: url_soft.url
+                url: url_soft.url.normalizedForm
             }
     ''', rawResults=True)
 
