@@ -5,7 +5,6 @@ from flask import render_template
 @app.route('/doc/<doc_id>')
 def doc_info(doc_id):
     data = doc_info_from_id(doc_id,db)
-    print(data[5], data[8])
     return render_template('pages/doc.html', data=data)
 
 @app.route('/doc/<doc_id>/<software>')
@@ -13,5 +12,4 @@ def doc_info_wsoftware(doc_id,software):
     data = doc_software(doc_id,software,db)
     data.append(doc_id)
     data.append(software)
-    print(len(data))
     return render_template('pages/doc_wsoftware.html',data = data)
