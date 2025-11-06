@@ -254,3 +254,54 @@ def sync_to_elasticsearch(db):
                 "structure_id": struc['struct_id']
             }
         )
+
+    # URLS ---------------------------------------------
+    # Delete the index if it exists
+    if es.indices.exists(index="urls"):
+        es.indices.delete(index="urls")
+
+    # Create index for URLs with lowercase normalizer
+    index_body = {
+        "settings": {
+            "analysis": {
+                "normalizer": {
+                    "lowercase_normalizer": {
+                        "type": "custom",
+                        "filter": ["lowercase"]
+                    }
+                }
+            }
+        },
+        "mappings": {
+            "properties": {
+                "doc_id": {"type": "keyword"},
+                "url": {
+                    "type": "keyword",
+                    "normalizer": "lowercase_normalizer"
+                }
+            }
+        }
+    }
+
+    es.indices.create(index="urls", body=index_body)
+
+    # Fetch URLs from ArangoDB and only keep doc_id
+    cursor = db.AQLQuery('''
+        FOR doc IN documents
+            FILTER HAS(doc, "urls")  # only documents with URLs
+            FOR u IN doc.urls
+                RETURN DISTINCT {
+                    doc_id: doc.file_hal_id
+                }
+    ''', rawResults=True)
+
+    url_list = list(cursor)
+
+    # Index each doc_id into Elasticsearch
+    for url_doc in url_list:
+        es.index(
+            index="urls",
+            document={
+                "doc_id": url_doc["doc_id"]
+            }
+        )

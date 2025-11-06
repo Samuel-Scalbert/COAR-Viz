@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     else if (filter === 'structure') {
-  resultsContainer.innerHTML = results.map(r =>
+      resultsContainer.innerHTML = results.map(r =>
         `<a href="/software/dashboard/${r.structure_id}">${r.structure}${r.struct_acronym ? ` (${r.struct_acronym})` : ''}</a>`
       ).join('');
     }
@@ -90,6 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
       search(query, filter);
     }
     if (filter === "structure") {
+      search(query, filter);
+    }
+    if (filter == "url") {
       search(query, filter);
     }
     // You can add else if for other filters here if you want
