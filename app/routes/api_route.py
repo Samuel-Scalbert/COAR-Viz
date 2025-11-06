@@ -327,7 +327,7 @@ def ar_notif():
                     FILTER edge_soft._from == doc._id 
                     LET software = DOCUMENT(edge_soft._to)
                     FILTER software.software_name.normalizedForm == "Spark"
-                    UPDATE software WITH {{ verification_by_author: true }} IN software
+                    UPDATE software WITH {{ verification_by_author: true }} IN softwares
                     return software
         """
     result = db.AQLQuery(query, rawResults=True)
@@ -340,7 +340,7 @@ def ar_notif():
                 FILTER edge_soft._from == doc._id 
                 LET software = DOCUMENT(edge_soft._to)
                 FILTER software.software_name.normalizedForm == "FAUST"
-                UPDATE software WITH {{ verification_by_author: False }} IN software
+                UPDATE software WITH {{ verification_by_author: False }} IN softwares
                 return software
             """
     result = db.AQLQuery(query, rawResults=True)
