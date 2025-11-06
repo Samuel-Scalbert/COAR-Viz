@@ -911,13 +911,13 @@ main .analyse{ /* Style Grid du block Main */
     -webkit-background-clip: text;
 }
 
-.time_info p span.viz {
+.time_info p span.viz, #accepted_by_the_author {
     background: linear-gradient(to right, #42a7e4, #b3679c);
     -webkit-text-fill-color: transparent;
     -webkit-background-clip: text;
 }
 
-.time_info p span.sync {
+.time_info p span.sync, #rejected_by_the_author {
     background: linear-gradient(to right, #ff6a00, #ee0979);
     -webkit-text-fill-color: transparent;
     -webkit-background-clip: text;
