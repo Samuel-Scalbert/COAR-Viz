@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (filter === 'url') {
       resultsContainer.innerHTML = results.map(r =>
         `<a href="/software/doc/${r.doc_id}" class="${r.doc_id}">
-           <div>${r.title}</div>
+           <div>${r.url}</div>
          </a>`
       ).join('');
     }
