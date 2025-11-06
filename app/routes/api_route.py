@@ -317,3 +317,31 @@ def notification_count():
 
     # Return JSON with NaN allowed
     return Response(json.dumps(list_nb_of_notif, allow_nan=True), mimetype="application/json")
+
+@app.route("/api/ar_notif")
+def ar_notif():
+    query = f"""
+            FOR doc IN documents
+                FILTER doc.file_hal_id == "lirmm-03148271"
+                FOR edge_soft IN edge_doc_to_software
+                    FILTER edge_soft._from == doc._id 
+                    LET software = DOCUMENT(edge_soft._to)
+                    FILTER software.software_name.normalizedForm == "Spark"
+                    UPDATE software WITH {{ verification_by_author: true }} IN software
+                    return software
+        """
+    result = db.AQLQuery(query, rawResults=True)
+    print(result)
+
+    query = f"""
+            FOR doc IN documents
+            FILTER doc.file_hal_id == "hal-03087763"
+            FOR edge_soft IN edge_doc_to_software
+                FILTER edge_soft._from == doc._id 
+                LET software = DOCUMENT(edge_soft._to)
+                FILTER software.software_name.normalizedForm == "FAUST"
+                UPDATE software WITH {{ verification_by_author: False }} IN software
+                return software
+            """
+    result = db.AQLQuery(query, rawResults=True)
+    print(result)
