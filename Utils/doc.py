@@ -171,12 +171,20 @@ def doc_info_from_id(file_id,db):
         to_id = id_software_doc['_to']
         json_software = db.AQLQuery("LET file_meta = DOCUMENT('" + to_id + "') RETURN file_meta", rawResults=True)
         json_software = json_software[0]
+        try:
+            notification_answer = json_software['verification_by_author']
+            if notification_answer:
+                notification_answer = 'accepted_by_the_author'
+            else:
+                notification_answer = 'rejected_by_the_author'
+        except KeyError:
+            notification_answer = None
 
         if json_software['software_name']['normalizedForm']:
             offsetStart = json_software["software_name"]["offsetStart"]
             offsetEnd = json_software["software_name"]["offsetEnd"]
             context = json_software['context']
-            context = context[:offsetStart] + '<span class="software-name"><strong>' + context[
+            context = context[:offsetStart] + '<span class="software-name" id="' + notification_answer + '"><strong>' + context[
                                                                                        offsetStart:offsetEnd] + '</strong></span>' + context[
                                                                                                                                      offsetEnd:]
             max_score = float('-inf')
