@@ -131,6 +131,7 @@ def insert_json():
                 "json_path": json_path
             }), 201
         elif inserted == False:
+            print({"status": "already registered", "file": file.filename})
             return jsonify({"status": "already registered", "file": file.filename}), 409
         else:
             return jsonify({"error": f"Database insertion failed: {str(inserted)}"}), 500
