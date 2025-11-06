@@ -328,8 +328,17 @@ def ar_notif():
                     LET software = DOCUMENT(edge_soft._to)
                     FILTER software.software_name.normalizedForm == "Spark"
                     UPDATE software WITH {{ verification_by_author: true }} IN softwares
-                    return software
         """
+    result = db.AQLQuery(query, rawResults=True)
+    query = """
+    FOR doc IN documents
+        FILTER doc.file_hal_id == "lirmm-03148271"
+        FOR edge_soft IN edge_doc_to_software
+            FILTER edge_soft._from == doc._id 
+            LET software = DOCUMENT(edge_soft._to)
+            FILTER software.software_name.normalizedForm == "Spark"
+            RETURN software._key
+    """
     result = db.AQLQuery(query, rawResults=True)
     print(result)
 
@@ -341,7 +350,17 @@ def ar_notif():
                 LET software = DOCUMENT(edge_soft._to)
                 FILTER software.software_name.normalizedForm == "FAUST"
                 UPDATE software WITH {{ verification_by_author: False }} IN softwares
-                return software
             """
+    result = db.AQLQuery(query, rawResults=True)
+
+    query = """
+        FOR doc IN documents
+            FILTER doc.file_hal_id == "hal-03087763"
+            FOR edge_soft IN edge_doc_to_software
+                FILTER edge_soft._from == doc._id 
+                LET software = DOCUMENT(edge_soft._to)
+                FILTER software.software_name.normalizedForm == "FAUST"
+                RETURN software._key
+        """
     result = db.AQLQuery(query, rawResults=True)
     print(result)
