@@ -302,6 +302,7 @@ def sync_to_elasticsearch(db):
         es.index(
             index="urls",
             document={
-                "doc_id": url_doc["doc_id"]
+                "doc_id": url_doc["doc_id"],
+                "url": url_doc["url"]
             }
         )
