@@ -289,7 +289,7 @@ def sync_to_elasticsearch(db):
     cursor = db.AQLQuery('''
         FOR url_soft IN softwares
             FILTER url_soft.url != null
-            RETURN DISTINCT url_soft.url {
+            RETURN DISTINCT {
                 doc_id: url_soft._id,
                 url: software.url
             }
