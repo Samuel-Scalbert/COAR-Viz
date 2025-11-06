@@ -58,7 +58,11 @@
                 {% endfor %}
              </ul>
           </div>
-
+           <div class="contexts">
+               <p><span class="waiting_for_the_answer"><strong>Waiting for the answer of the author</strong></span></p>
+               <p><span class="accepted_by_the_author"><strong>The Software was accepted by the author</strong></span></p>
+               <p><span class="rejected_by_the_author"><strong>The Software was rejected by the author</strong></span></p>
+           </div>
        </div>
       {% for attrib,lists_context in data[0].items() %}
       {% if lists_context|length > 0 %}
