@@ -101,11 +101,11 @@ def insert_json():
         else:
             inserted = True
 
-        insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
+        '''print('id:', hal_id)
+        listinserted = db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True,batchSize=2000)
+        print('list inserted:', listinserted)'''
 
-        print('id:',hal_id)
-        listinserted = db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True, batchSize=2000)
-        print('list inserted:',listinserted)
+        insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
 
         if inserted == True:
             update_nb_notification(db)
@@ -116,6 +116,14 @@ def insert_json():
                     os.remove(json_path)
             except Exception as e:
                 print(f"Error deleting files: {e}")
+
+            print({
+                "status": "inserted",
+                "file": file.filename,
+                "xml_path": xml_path,
+                "json_path": json_path
+            })
+
             return jsonify({
                 "status": "inserted",
                 "file": file.filename,
