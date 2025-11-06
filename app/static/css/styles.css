@@ -580,7 +580,6 @@ main .analyse{ /* Style Grid du block Main */
 
 .software-list li::marker{
     margin-right: 1ch;
-    color: red;
 }
 
 .list_software_doc_id{
@@ -905,7 +904,7 @@ main .analyse{ /* Style Grid du block Main */
     align-items: center;
 }
 
-.time_info p span.docker {
+.time_info p span.docker, #waiting_for_the_answer {
     background: linear-gradient(to right, #0C49C2, #086dd7);
     -webkit-text-fill-color: transparent;
     -webkit-background-clip: text;
