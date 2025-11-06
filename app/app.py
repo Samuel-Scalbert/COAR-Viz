@@ -42,7 +42,7 @@ global data_dashboard
 data_dashboard = None
 #data_dashboard = dashboard(db, structure)
 
-from app.routes import doc_route, dashboard_route,reset_db, software_route, api_route, disambiguate_route, author_route, search_route, insert_json_route, elastic_route
+from app.routes import doc_route, dashboard_route,reset_db, software_route, api_route, disambiguate_route, author_route, search_route, inbox, elastic_route
 
 @app.route('/')
 def home():
