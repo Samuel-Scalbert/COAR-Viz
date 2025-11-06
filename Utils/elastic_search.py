@@ -260,7 +260,7 @@ def sync_to_elasticsearch(db):
     if es.indices.exists(index="urls"):
         es.indices.delete(index="urls")
 
-    # Create index for URLs with lowercase normalizer
+    # Create index for URLs (storing only doc_id)
     index_body = {
         "settings": {
             "analysis": {
@@ -285,19 +285,19 @@ def sync_to_elasticsearch(db):
 
     es.indices.create(index="urls", body=index_body)
 
-    # Fetch URLs from ArangoDB and only keep doc_id
+    # Fetch URLs from 'softwares' collection and include only doc_id
     cursor = db.AQLQuery('''
-        FOR doc IN documents
-            FILTER HAS(doc, "urls")  # only documents with URLs
-            FOR u IN doc.urls
-                RETURN DISTINCT {
-                    doc_id: doc.file_hal_id
-                }
+        FOR software IN softwares
+            FILTER HAS(software, "url") && software.url != null
+            RETURN DISTINCT {
+                doc_id: software._id,   # or software.file_hal_id if you prefer
+                url: software.url
+            }
     ''', rawResults=True)
 
     url_list = list(cursor)
 
-    # Index each doc_id into Elasticsearch
+    # Index each URL with its document ID
     for url_doc in url_list:
         es.index(
             index="urls",
