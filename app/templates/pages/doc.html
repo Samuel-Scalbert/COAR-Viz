@@ -19,14 +19,6 @@
            {% endif %}
 
            <div class="doc_author">
-               {% if data[8] != None %}
-               <h1>Software links</h1>
-               <ul class="top_ul">
-                   {% for url in data[8] %}
-                   <li><a href="{{ url }}">{{ url }}</a></li>
-                   {% endfor %}
-               </ul>
-               {% endif %}
                <h1>Authors</h1>
                <ul class="top_ul">
                    {% for author in data[6] %}
@@ -60,14 +52,20 @@
              </ul>
           </div>
            <div class="contexts">
-               <h4> Legend </h4>
-               <p><span id="waiting_for_the_answer"><strong>Waiting for the answer of the author</strong></span></p>
-               <p><span id="accepted_by_the_author">The Software was accepted by the author</span></p>
-               <p><span id="rejected_by_the_author">The Software was rejected by the author</span></p>
-               <h4> Url of the document </h4>
-               <a href="#"></a>
-               <h4> Url found in the document</h4>
-               <p>{{ data[8] }}</p>
+               <h4>Legend</h4>
+                    <p><span id="waiting_for_the_answer">Waiting for Author Verification:</span> The software citation has been submitted, but the author has not yet confirmed whether it is correct.</p>
+                    <p><span id="accepted_by_the_author">Verified by Author:</span> The author confirmed that this software was correctly cited in the article.</p>
+                    <p><span id="rejected_by_the_author">Rejected by Author:</span> The author indicated that this software citation is incorrect or not relevant to the article.</p>
+               <h4> Url of the document:</h4>
+               <a href="https://inria.hal.science/{{ data[5] }}">https://inria.hal.science/{{ data[5] }}</a>
+               {% if data[8] != None %}
+                   <h1>Software links</h1>
+                   <ul class="top_ul">
+                       {% for url in data[8] %}
+                       <li><a href="{{ url }}">{{ url }}</a></li>
+                       {% endfor %}
+                   </ul>
+               {% endif %}
            </div>
        </div>
       {% for attrib,lists_context in data[0].items() %}
