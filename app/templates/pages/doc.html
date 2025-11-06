@@ -2,6 +2,7 @@
 {% block body %}
 <div>
     <div class="titre-block"><h2 style="padding: 5px">{{ data[4] }}</h2></div>
+    <div class="titre-block"><h2 style="padding: 5px">{{ data[4] }}</h2></div>
    <div class="flex-container">
        <div class="info_doc">
 
@@ -59,9 +60,14 @@
              </ul>
           </div>
            <div class="contexts">
-               <p><span class="waiting_for_the_answer"><strong>Waiting for the answer of the author</strong></span></p>
-               <p><span class="accepted_by_the_author"><strong>The Software was accepted by the author</strong></span></p>
-               <p><span class="rejected_by_the_author"><strong>The Software was rejected by the author</strong></span></p>
+               <h4> Legend </h4>
+               <p><span id="waiting_for_the_answer"><strong>Waiting for the answer of the author</strong></span></p>
+               <p><span id="accepted_by_the_author">The Software was accepted by the author</span></p>
+               <p><span id="rejected_by_the_author">The Software was rejected by the author</span></p>
+               <h4> Url of the document </h4>
+               <a href="#"></a>
+               <h4> Url found in the document</h4>
+               <p>{{ data[8] }}</p>
            </div>
        </div>
       {% for attrib,lists_context in data[0].items() %}
