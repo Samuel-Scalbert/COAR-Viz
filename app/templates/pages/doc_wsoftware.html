@@ -50,6 +50,13 @@
                 {% endfor %}
              </ul>
           </div>
+          <div class="contexts">
+                    <p><span id="waiting_for_the_answer"><strong>Waiting for Author Verification:</strong></span> The software citation has been submitted, but the author has not yet confirmed whether it is correct.</p>
+                    <p><span id="accepted_by_the_author">Verified by Author:</span> The author confirmed that this software was correctly cited in the article.</p>
+                    <p><span id="rejected_by_the_author">Rejected by Author:</span> The author indicated that this software citation is incorrect or not relevant to the article.</p>
+               <h4> Url of the document:</h4>
+               <a href="https://inria.hal.science/{{ data[5] }}">https://inria.hal.science/{{ data[5] }}</a>
+           </div>
 
        </div>
       {% for attrib,lists_context in data[0].items() %}
