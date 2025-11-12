@@ -56,7 +56,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       let software_list = '<ul>';
       soft_info.forEach(soft_list => {
-        software_list += `<li><a href="/software/doc/${soft_list[1]}/${soft_list[0]}">${soft_list[0]}</a> (${soft_list[1]})(${soft_list[2]})</li>`;
+        let statusText;
+
+        if (soft_list[2] === true) {
+          statusText = "✅ Active";
+        } else if (soft_list[2] === false) {
+          statusText = "❌ Inactive";
+        } else if (soft_list[2] === null) {
+          statusText = "⚪ Unknown";
+        } else {
+          statusText = ""; // fallback if unexpected value
+        }
+
+        software_list += `
+          <li>
+            <a href="/software/doc/${soft_list[1]}/${soft_list[0]}">${soft_list[0]}</a> 
+            (${soft_list[1]}) ${statusText}
+          </li>`;
       });
       software_list += '</ul>';
 
