@@ -1,6 +1,21 @@
 from elasticsearch import Elasticsearch
+import time
 
 def sync_to_elasticsearch(db):
+
+    es = Elasticsearch(hosts=["http://elasticsearch:9200"])
+
+    for attempt in range(20):  # 20 tries ~ 100s total
+        try:
+            if es.ping():
+                print("Elasticsearch is ready!")
+                break
+        except Exception as e:
+            print(f"Waiting for Elasticsearch... ({attempt + 1}/20)")
+            time.sleep(5)
+    else:
+        raise RuntimeError("Elasticsearch did not start in time")
+
     # Elasticsearch feeding
     es = Elasticsearch('http://elasticsearch:9200')
     # SOFTWARE ---------------------------------
