@@ -66,14 +66,14 @@ document.addEventListener("DOMContentLoaded", () => {
     createChart(
         "/software/api/notification_count",
         "lineChartNotif",
-        "Notifications (last 30 days)",
+        "Notifications received (last 30 days)",
         "Number of Notifications"
     );
 
     createChart(
         "/software/api/mention_count",
         "lineChartMention",
-        "Mentions (last 30 days)",
+        "Mentions received (last 30 days)",
         "Number of Mentions"
     );
 });
