@@ -59,22 +59,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         let statusText;
 
         if (soft_list[2] === true) {
-          statusText = "✅ Active";
+          statusText = '<span class="accepted_by_the_author"><strong>Verified by Author:</strong></span>';
         } else if (soft_list[2] === false) {
-          statusText = "❌ Inactive";
+          statusText = '<span class="rejected_by_the_author"><strong>Rejected by Author:</strong></span>';
         } else if (soft_list[2] === null) {
-          statusText = "⚪ Unknown";
+          statusText = ''; // No status for null
         } else {
-          statusText = ""; // fallback if unexpected value
+          statusText = '<span class="unexpected_value">Unexpected value</span>';
         }
 
         software_list += `
           <li>
-            <a href="/software/doc/${soft_list[1]}/${soft_list[0]}">${soft_list[0]}</a> 
+            <a href="/software/doc/${soft_list[1]}/${soft_list[0]}">${soft_list[0]}</a>
             (${soft_list[1]}) ${statusText}
           </li>`;
       });
+
       software_list += '</ul>';
+
 
       authorCard.innerHTML = `
         <h2>${auth_info[0].author.name.surname} ${auth_info[0].author.name.forename}</h2>
