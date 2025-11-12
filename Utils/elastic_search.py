@@ -4,24 +4,6 @@ import time
 def sync_to_elasticsearch(db):
 
     es = Elasticsearch(hosts=["http://elasticsearch:9200"], request_timeout=60)
-    # Wait for cluster to be ready
-    max_wait = 120
-    interval = 5
-    waited = 0
-    while waited < max_wait:
-        try:
-            health = es.cluster.health(wait_for_status='green', timeout='10s')
-            if health['status'] == 'green':
-                print("Cluster is GREEN!")
-                break
-            else:
-                print(f"Cluster not ready (status: {health['status']})")
-        except Exception:
-            print("Waiting for cluster health...")
-        time.sleep(interval)
-        waited += interval
-    else:
-        raise RuntimeError("Cluster did not reach GREEN in time")
     # SOFTWARE ---------------------------------
     collection_software = db['softwares']
     # Delete index if exists
