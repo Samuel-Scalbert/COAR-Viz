@@ -750,7 +750,7 @@ main .analyse{ /* Style Grid du block Main */
     border-radius: 10px;
 }
 
-#lineChartNotif{
+#lineChartNotif, #lineChartMention{
     width: -webkit-fill-available;
     height: -webkit-fill-available;
 }
