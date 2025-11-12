@@ -318,6 +318,32 @@ def notification_count():
     # Return JSON with NaN allowed
     return Response(json.dumps(list_nb_of_notif, allow_nan=True), mimetype="application/json")
 
+@app.route("/api/mention_count")
+def mention_count():
+    list_nb_of_notif = []
+
+    today = date.today()
+    last_30_days = [(today - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(30)]
+    last_30_days = list(reversed(last_30_days))  # oldest → newest
+
+    for day in last_30_days:
+        query = f'''
+        FOR nb IN mentions
+            FILTER nb.date == "{day}"
+            RETURN nb.count
+        '''
+        data = db.AQLQuery(query, rawResults=True, batchSize=1)
+
+        if len(data) == 0:
+            count = None
+        else:
+            count = data[0]
+
+        list_nb_of_notif.append(count)
+
+    # Return JSON with NaN allowed
+    return Response(json.dumps(list_nb_of_notif, allow_nan=True), mimetype="application/json")
+
 @app.route("/api/ar_notif")
 def ar_notif():
     query = f"""

@@ -1,67 +1,79 @@
-document.addEventListener("DOMContentLoaded", function () {
-    fetch("/software/api/notification_count")
-        .then(response => response.json())
-        .then(notificationData => {
-            // Generate labels for the last 30 days (MM/DD)
-            const labels = [];
-            for (let i = 29; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
-            }
+document.addEventListener("DOMContentLoaded", () => {
+    // Helper function to create a line chart
+    function createChart(apiUrl, elementId, label, yTitle) {
+        fetch(apiUrl)
+            .then(res => res.json())
+            .then(data => {
+                // Generate labels for the last 30 days (MM/DD)
+                const labels = Array.from({ length: 30 }, (_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - (29 - i));
+                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                });
 
-            const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
+                // Function for dashed lines on skipped points
+                const skipped = (ctx, value) =>
+                    ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
-            const chartData = {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Notifications (last 30 days)',
-                        data: notificationData,
-                        fill: false,
-                        spanGaps: true, // show gaps for null
-                        segment: {
-                            borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)'),
-                            borderDash: ctx => skipped(ctx, [6, 6]),
-                        },
-                    }
-                ]
-            };
-
-            const chartConfig = {
-                type: 'line',
-                data: chartData,
-                options: {
-                    plugins: {
-                        title: {
-                            display: false // Remove chart title
-                        },
-                        datalabels: { display: false }
+                // Build the chart
+                const ctx = document.getElementById(elementId).getContext("2d");
+                const chart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label,
+                                data,
+                                fill: false,
+                                spanGaps: true, // show gaps for null values
+                                segment: {
+                                    borderColor: ctx => skipped(ctx, "rgba(0,0,0,0.2)"),
+                                    borderDash: ctx => skipped(ctx, [6, 6]),
+                                },
+                            },
+                        ],
                     },
-                    fill: false,
-                    radius: 5,
-                    interaction: { intersect: false },
-                    scales: {
-                        x: {
-                            display: true
+                    options: {
+                        plugins: {
+                            title: { display: false },
+                            datalabels: { display: false },
                         },
-                        y: {
-                            display: true,
-                            title: { display: true, text: 'Number of Notifications'},
-                            beginAtZero: true,
-                            ticks: {
-                                // Force integer values
-                                callback: function(value) {
-                                    return Number.isInteger(value) ? value : null;
-                                }
-                            }
-                        }
-                    }
-                }
-            };
+                        radius: 5,
+                        interaction: { intersect: false },
+                        scales: {
+                            x: { display: true },
+                            y: {
+                                display: true,
+                                beginAtZero: true,
+                                title: { display: true, text: yTitle },
+                                ticks: {
+                                    callback: value =>
+                                        Number.isInteger(value) ? value : null,
+                                },
+                            },
+                        },
+                    },
+                });
 
-            const ctx = document.getElementById('lineChartNotif').getContext('2d');
-            window.myLineChart = new Chart(ctx, chartConfig);
-        })
-        .catch(error => console.error("Error fetching notification data:", error));
+                // Store chart globally (optional)
+                window[`myChart_${elementId}`] = chart;
+            })
+            .catch(err => console.error(`Error fetching ${label} data:`, err));
+    }
+
+    // Create both charts
+    createChart(
+        "/software/api/notification_count",
+        "lineChartNotif",
+        "Notifications (last 30 days)",
+        "Number of Notifications"
+    );
+
+    createChart(
+        "/software/api/mention_count",
+        "lineChartMention",
+        "Mentions (last 30 days)",
+        "Number of Mentions"
+    );
 });
