@@ -15,7 +15,7 @@ def author_info_from_id(author_halauthorid):
                 FILTER edge_soft._from == edge_doc._from
                 LET software = DOCUMENT(edge_soft._to)
                 LET doc = DOCUMENT(edge_doc._from)
-                RETURN [software.software_name.normalizedForm, doc.file_hal_id]
+                RETURN [software.software_name.normalizedForm, doc.file_hal_id, software.verification_by_author]
         )
         
         LET structures_list = (

@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       let software_list = '<ul>';
       soft_info.forEach(soft_list => {
-        software_list += `<li><a href="/software/doc/${soft_list[1]}/${soft_list[0]}">${soft_list[0]}</a> (${soft_list[1]})</li>`;
+        software_list += `<li><a href="/software/doc/${soft_list[1]}/${soft_list[0]}">${soft_list[0]}</a> (${soft_list[1]})(${soft_list[2]})</li>`;
       });
       software_list += '</ul>';
 
