@@ -59,9 +59,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         let statusText;
 
         if (soft_list[2] === true) {
-          statusText = '<span class="accepted_by_the_author"><strong>Verified by Author:</strong></span>';
+          statusText = '<span id="accepted_by_the_author"><strong>Verified by Author</strong></span>';
         } else if (soft_list[2] === false) {
-          statusText = '<span class="rejected_by_the_author"><strong>Rejected by Author:</strong></span>';
+          statusText = '<span id="rejected_by_the_author"><strong>Rejected by Author</strong></span>';
         } else if (soft_list[2] === null) {
           statusText = ''; // No status for null
         } else {
