@@ -108,7 +108,7 @@ def insert_json():
         insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
 
         if inserted == True:
-            update_nb_notification(db)
+            update_nb_notification(db, hal_id)
             try:
                 if os.path.exists(xml_path):
                     os.remove(xml_path)
@@ -120,8 +120,6 @@ def insert_json():
             print({
                 "status": "inserted",
                 "file": file.filename,
-                "xml_path": xml_path,
-                "json_path": json_path
             })
 
             return jsonify({

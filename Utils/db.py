@@ -85,7 +85,7 @@ def find_ancestor_paths(current_affiliation_id, ns, tree):
                 [current_affiliation_id] + path)  # Create a separate path for each relation
     return all_paths  # Return all paths for the current structure
 
-def update_nb_notification(db):
+def update_nb_notification(db, filename):
     notifications_collection = check_or_create_collection(db, 'notifications')
     # Get today's date as YYYY-MM-DD
     today = date.today()
@@ -95,12 +95,15 @@ def update_nb_notification(db):
         # UPSERT in ArangoDB: insert if not exists, update if exists
         query = f"""
         UPSERT {{ date: "{today_str}" }}
-        INSERT {{ date: "{today_str}", count: 1 }}
-        UPDATE {{ count: OLD.count + 1 }} IN notifications
+        INSERT {{ date: "{today_str}", count: 1, filenames: ["{filename}"] }}
+        UPDATE {{ 
+            count: OLD.count + 1, 
+            filenames: PUSH(OLD.filenames, "{filename}") 
+        }} IN notifications
         RETURN NEW
         """
         result = db.AQLQuery(query, rawResults=True)
-        print(f"✅ Updated notification count for {today_str}: {result}")
+        print(f"✅ Updated notification for {today_str}: {result}")
         return result
 
     except AQLQueryError as e:
