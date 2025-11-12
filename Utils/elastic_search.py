@@ -1,31 +1,5 @@
 from elasticsearch import Elasticsearch
 
-'''
-sudo docker run -d \
-  --name elasticsearch \
-  -p 9200:9200 \
-  -p 9300:9300 \
-  --network coar-notify-inria-hal_default \
-  -e "discovery.type=single-node" \
-  -e "ES_JAVA_OPTS=-Xms1g -Xmx1g" \
-  -e "xpack.security.enabled=false" \
-  --memory="2g" \
-  --restart always \
-  docker.elastic.co/elasticsearch/elasticsearch:9.0.2
-'''
-
-
-'''
-sudo docker run -d \
-  --name coar-viz \
-  --network coar-notify-inria-hal_default \
-  --restart always\
-  -p 8040:8040 \
-  -e ARANGO_PASSWORD=coarNotify2025_ \
-  samuelscalbert/software-viz_flask-app:coar_vm_0.3 \
-  python run.py
-'''
-
 def sync_to_elasticsearch(db):
     # Elasticsearch feeding
     es = Elasticsearch('http://elasticsearch:9200')
