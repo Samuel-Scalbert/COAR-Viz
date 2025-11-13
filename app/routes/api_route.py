@@ -412,7 +412,7 @@ def accepted_notification(hal_id, software_name):
         """
         bind_vars = {"hal_id": hal_id, "software_name": software_name}
         result = db.AQLQuery(query, bindVars=bind_vars, rawResults=True)
-
+        result = result[0:]
         if not result:
             return jsonify({
                 "status": "not_found",
@@ -456,7 +456,7 @@ def rejected_notification(hal_id, software_name):
         """
         bind_vars = {"hal_id": hal_id, "software_name": software_name}
         result = db.AQLQuery(query, bindVars=bind_vars, rawResults=True)
-
+        result = result[0:]
         if not result:
             return jsonify({
                 "status": "not_found",
