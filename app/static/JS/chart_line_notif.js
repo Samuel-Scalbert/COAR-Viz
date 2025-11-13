@@ -76,4 +76,18 @@ document.addEventListener("DOMContentLoaded", () => {
         "Mentions received (last 30 days)",
         "Number of Mentions"
     );
+
+    createChart(
+        "/software/api/accepted_count",
+        "lineChartMentionAccepted",
+        "Mentions accepted (last 30 days)",
+        "Number of Mentions"
+    );
+
+    createChart(
+        "/software/api/rejected_count",
+        "lineChartMentionRejected",
+        "Mentions rejected (last 30 days)",
+        "Number of Mentions"
+    );
 });

@@ -1,3 +1,4 @@
+from Utils.db import update_nb_rejected, update_nb_accepted
 from app.app import app, db
 from Utils.disambiguate import desambiguate_from_software
 from Utils.author import author_info_from_id
@@ -344,26 +345,141 @@ def mention_count():
     # Return JSON with NaN allowed
     return Response(json.dumps(list_nb_of_notif, allow_nan=True), mimetype="application/json")
 
-@app.route("/api/ar_notif")
-def ar_notif():
-    query = f"""
-            FOR doc IN documents
-                FILTER doc.file_hal_id == "lirmm-03148271"
-                FOR edge_soft IN edge_doc_to_software
-                    FILTER edge_soft._from == doc._id 
-                    LET software = DOCUMENT(edge_soft._to)
-                    FILTER software.software_name.normalizedForm == "Spark"
-                    UPDATE software WITH {{ verification_by_author: true }} IN softwares
-        """
-    result = db.AQLQuery(query, rawResults=True)
+@app.route("/api/accepted_count")
+def mention_count():
+    list_nb_of_notif = []
 
-    query = f"""
-            FOR doc IN documents
-            FILTER doc.file_hal_id == "hal-03087763"
+    today = date.today()
+    last_30_days = [(today - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(30)]
+    last_30_days = list(reversed(last_30_days))  # oldest → newest
+
+    for day in last_30_days:
+        query = f'''
+        FOR nb IN accepted
+            FILTER nb.date == "{day}"
+            RETURN nb.count
+        '''
+        data = db.AQLQuery(query, rawResults=True, batchSize=1)
+
+        if len(data) == 0:
+            count = None
+        else:
+            count = data[0]
+
+        list_nb_of_notif.append(count)
+
+    # Return JSON with NaN allowed
+    return Response(json.dumps(list_nb_of_notif, allow_nan=True), mimetype="application/json")
+
+@app.route("/api/rejected_count")
+def mention_count():
+    list_nb_of_notif = []
+
+    today = date.today()
+    last_30_days = [(today - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(30)]
+    last_30_days = list(reversed(last_30_days))  # oldest → newest
+
+    for day in last_30_days:
+        query = f'''
+        FOR nb IN rejected
+            FILTER nb.date == "{day}"
+            RETURN nb.count
+        '''
+        data = db.AQLQuery(query, rawResults=True, batchSize=1)
+
+        if len(data) == 0:
+            count = None
+        else:
+            count = data[0]
+
+        list_nb_of_notif.append(count)
+
+    # Return JSON with NaN allowed
+    return Response(json.dumps(list_nb_of_notif, allow_nan=True), mimetype="application/json")
+
+@app.route("/api/accepted_notification/<hal_id>/<software_name>", methods=["POST"])
+def accepted_notification(hal_id, software_name):
+    try:
+        query = """
+        FOR doc IN documents
+            FILTER doc.file_hal_id == @hal_id
             FOR edge_soft IN edge_doc_to_software
-                FILTER edge_soft._from == doc._id 
-                LET software = DOCUMENT(edge_soft._to)
-                FILTER software.software_name.normalizedForm == "FAUST"
-                UPDATE software WITH {{ verification_by_author: False }} IN softwares
-            """
-    result = db.AQLQuery(query, rawResults=True)
+                FILTER edge_soft._from == doc._id
+                LET soft = DOCUMENT(edge_soft._to)
+                FILTER soft.software_name.normalizedForm == @software_name
+                UPDATE soft WITH { verification_by_author: true } IN softwares
+                RETURN NEW
+        """
+        bind_vars = {"hal_id": hal_id, "software_name": software_name}
+        result = db.AQLQuery(query, bindVars=bind_vars, rawResults=True)
+
+        if not result:
+            return jsonify({
+                "status": "not_found",
+                "message": f"No software found for HAL ID {hal_id} and name {software_name}"
+            }), 404
+        try:
+            update_nb_accepted(db)
+        except Exception as e:
+            # Log this separately to avoid losing the main update result
+            app.logger.error(f"Error updating acceptation count: {e}")
+            return jsonify({
+                "status": "partial_success",
+                "message": "Software updated, but failed to update acceptation count.",
+                "error": str(e)
+            }), 207  # 207 Multi-Status (partial success)
+        return jsonify({
+            "status": "success",
+            "updated": len(result),
+            "details": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+@app.route("/api/rejected_notification/<hal_id>/<software_name>", methods=["POST"])
+def rejected_notification(hal_id, software_name):
+    try:
+        query = """
+        FOR doc IN documents
+            FILTER doc.file_hal_id == @hal_id
+            FOR edge_soft IN edge_doc_to_software
+                FILTER edge_soft._from == doc._id
+                LET soft = DOCUMENT(edge_soft._to)
+                FILTER soft.software_name.normalizedForm == @software_name
+                UPDATE soft WITH { verification_by_author: false } IN softwares
+                RETURN NEW
+        """
+        bind_vars = {"hal_id": hal_id, "software_name": software_name}
+        result = db.AQLQuery(query, bindVars=bind_vars, rawResults=True)
+
+        if not result:
+            return jsonify({
+                "status": "not_found",
+                "message": f"No software found for HAL ID {hal_id} and name {software_name}"
+            }), 404
+        try:
+            update_nb_rejected(db)
+        except Exception as e:
+            # Log this separately to avoid losing the main update result
+            app.logger.error(f"Error updating rejection count: {e}")
+            return jsonify({
+                "status": "partial_success",
+                "message": "Software updated, but failed to update rejection count.",
+                "error": str(e)
+            }), 207  # 207 Multi-Status (partial success)
+        return jsonify({
+            "status": "success",
+            "updated": len(result),
+            "details": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500

@@ -5,7 +5,7 @@ from flask import request, jsonify
 from xml.sax.saxutils import unescape
 from xml.dom import minidom
 from app.app import app, db
-from Utils.db import insert_json_db, update_nb_notification
+from Utils.db import insert_json_db, update_nb_notification, update_nb_accepted, update_nb_rejected
 import re
 
 '''@app.before_request

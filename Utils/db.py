@@ -136,6 +136,54 @@ def update_nb_mention(db):
     except Exception as e:
         print(f"⚠️ Unexpected error in update_nb_mention: {e}")
         return None
+    
+def update_nb_accepted(db):
+    accepted_collection = check_or_create_collection(db, 'accepted')
+    # Get today's date as YYYY-MM-DD
+    today = date.today()
+    today_str = today.strftime("%Y-%m-%d")
+
+    try:
+        # UPSERT in ArangoDB: insert if not exists, update if exists
+        query = f"""
+        UPSERT {{ date: "{today_str}" }}
+        INSERT {{ date: "{today_str}", count: 1 }}
+        UPDATE {{ count: OLD.count + 1 }} IN accepted
+        RETURN NEW
+        """
+        result = db.AQLQuery(query, rawResults=True)
+        return result
+
+    except AQLQueryError as e:
+        print(f"⚠️ AQL error while updating accepted: {e}")
+        return None
+    except Exception as e:
+        print(f"⚠️ Unexpected error in update_nb_accepted: {e}")
+        return None
+
+def update_nb_rejected(db):
+    rejected_collection = check_or_create_collection(db, 'rejected')
+    # Get today's date as YYYY-MM-DD
+    today = date.today()
+    today_str = today.strftime("%Y-%m-%d")
+
+    try:
+        # UPSERT in ArangoDB: insert if not exists, update if exists
+        query = f"""
+        UPSERT {{ date: "{today_str}" }}
+        INSERT {{ date: "{today_str}", count: 1 }}
+        UPDATE {{ count: OLD.count + 1 }} IN rejected
+        RETURN NEW
+        """
+        result = db.AQLQuery(query, rawResults=True)
+        return result
+
+    except AQLQueryError as e:
+        print(f"⚠️ AQL error while updating rejected: {e}")
+        return None
+    except Exception as e:
+        print(f"⚠️ Unexpected error in update_nb_rejected: {e}")
+        return None
 
 def insert_json_db(data_path_json,data_path_xml,db):
     if not is_elasticsearch_alive():
