@@ -346,7 +346,7 @@ def mention_count():
     return Response(json.dumps(list_nb_of_notif, allow_nan=True), mimetype="application/json")
 
 @app.route("/api/accepted_count")
-def mention_count():
+def accepted_count():
     list_nb_of_notif = []
 
     today = date.today()
@@ -372,7 +372,7 @@ def mention_count():
     return Response(json.dumps(list_nb_of_notif, allow_nan=True), mimetype="application/json")
 
 @app.route("/api/rejected_count")
-def mention_count():
+def rejected_count():
     list_nb_of_notif = []
 
     today = date.today()
