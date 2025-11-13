@@ -430,8 +430,7 @@ def accepted_notification(hal_id, software_name):
             }), 207  # 207 Multi-Status (partial success)
         return jsonify({
             "status": "success",
-            "updated": len(result),
-            "details": result
+            "updated nb of mentions": len(result)
         }), 200
 
     except Exception as e:
@@ -474,8 +473,7 @@ def rejected_notification(hal_id, software_name):
             }), 207  # 207 Multi-Status (partial success)
         return jsonify({
             "status": "success",
-            "updated": len(result),
-            "details": result
+            "updated nb of mentions": len(result)
         }), 200
 
     except Exception as e:
