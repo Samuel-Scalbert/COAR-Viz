@@ -103,6 +103,8 @@ def update_nb_notification(db, filename):
         RETURN NEW
         """
         result = db.AQLQuery(query, rawResults=True)
+        result = result[0]
+        result['filenames'] = len(result['filenames'])
         print(f"✅ Updated notification for {today_str}: {result}")
         return result
 
