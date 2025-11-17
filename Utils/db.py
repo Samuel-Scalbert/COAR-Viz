@@ -334,6 +334,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
 
                     # Process each mention
                     for mention in data_json_get_mentions:
+                        print(filename, mention)
                         if mention['software-name']['normalizedForm'] not in blacklist:
                             mention['software_name'] = mention.pop('software-name')
                             mention['software_type'] = mention.pop('software-type')
