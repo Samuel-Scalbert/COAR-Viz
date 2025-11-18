@@ -225,7 +225,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
     dict_edge_author = {}
     new_file = False
 
-    print(data_json_files)
 
     for data_file_xml in data_xml_list:
         file_path = f'{data_path_xml}/{data_file_xml}'
@@ -326,16 +325,17 @@ def insert_json_db(data_path_json,data_path_xml,db):
 
             if f"{file_name}.json" in data_json_files:
                 with open(json_path, 'r') as json_file:
+
                     data_json = json.load(json_file)
                     data_json_get_mentions = data_json.get("mentions")
-
+                    print(data_json_get_mentions)
                     # Remove duplicates
                     for elm in duplicates_JSON(data_json_get_mentions):
                         data_json_get_mentions.remove(elm)
 
                     # Process each mention
                     for mention in data_json_get_mentions:
-                        print(filename, mention)
+                        print(mention)
                         if mention['software-name']['normalizedForm'] not in blacklist:
                             mention['software_name'] = mention.pop('software-name')
                             mention['software_type'] = mention.pop('software-type')
