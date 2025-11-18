@@ -225,6 +225,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
     dict_edge_author = {}
     new_file = False
 
+    print(data_json_files)
 
     for data_file_xml in data_xml_list:
         file_path = f'{data_path_xml}/{data_file_xml}'
