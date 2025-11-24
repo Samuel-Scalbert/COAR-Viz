@@ -277,6 +277,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
             print(measure_elem)
             if measure_elem is not None:
                 quantity = measure_elem.get("quantity")
+                print(quantity)
                 if quantity == 0:
                     print(f"The xml returned is empty for {file_name}")
                     continue
