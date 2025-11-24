@@ -140,6 +140,7 @@ def insert_json():
 
     file = request.files["file"]
     hal_id = request.form.get("document_id")
+    hal_id = hal_id[:-2]
     final_log["hal_id"] = hal_id
 
     # ------------------ 2. XML DOWNLOAD ------------------
