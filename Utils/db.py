@@ -323,7 +323,11 @@ def insert_json_db(data_path_json,data_path_xml,db):
             document_document.save()
 
             # SOFTWARE -----------------------------------------------------
-
+            if f"{file_name}.json" in data_json_files:
+                pass
+            else:
+                if file_name[-2] == "v":
+                   file_name = file_name[:-3] + "_" + file_name[-2:]
             if f"{file_name}.json" in data_json_files:
                 with open(json_path, 'r') as json_file:
                     print("yo", json_file)
