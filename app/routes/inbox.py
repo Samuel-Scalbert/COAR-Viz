@@ -44,7 +44,6 @@ def save_xml(hal_id, xml_content, folder="./app/static/data/xml"):
 
     with open(xml_path, "wb") as f:
         f.write(pretty_xml)
-    print(f"Saved {xml_path}")
     return xml_path
 
 
@@ -60,7 +59,6 @@ def save_json(file, folder="./app/static/data/json"):
     json_path = os.path.join(folder, f"{file_name}.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(data_json, f, ensure_ascii=False, indent=4)
-    print(f"Saved {json_path}")
     return json_path
 
 
@@ -81,6 +79,7 @@ def insert_json():
     if "file" not in request.files:
         final_log["status"] = "error"
         final_log["errors"].append("No file provided")
+        print(jsonify(final_log))
         return jsonify(final_log), 400
 
     file = request.files["file"]
@@ -107,6 +106,7 @@ def insert_json():
             final_log["errors"].append(
                 f"Could not download XML (status {response.status_code})"
             )
+            print(jsonify(final_log))
             return jsonify(final_log), 500
 
         decoded_xml = unescape(response.text)
@@ -117,6 +117,7 @@ def insert_json():
     except Exception as e:
         final_log["status"] = "error"
         final_log["errors"].append(f"Exception while downloading XML: {str(e)}")
+        print(jsonify(final_log))
         return jsonify(final_log), 500
 
     # -----------------------------
@@ -130,6 +131,7 @@ def insert_json():
     except Exception as e:
         final_log["status"] = "error"
         final_log["errors"].append(f"Exception while saving JSON: {str(e)}")
+        print(jsonify(final_log))
         return jsonify(final_log), 500
 
     # -----------------------------
@@ -154,6 +156,7 @@ def insert_json():
             final_log["status"] = "success"
             final_log["step"] = "Completed"
 
+            print(jsonify(final_log))
             return jsonify(final_log), 201
 
         else:
@@ -161,9 +164,11 @@ def insert_json():
             final_log["status"] = "conflict"
             final_log["step"] = "Completed"
 
+            print(jsonify(final_log))
             return jsonify(final_log), 409
 
     except Exception as e:
         final_log["status"] = "error"
         final_log["errors"].append(f"Database insertion failed: {str(e)}")
+        print(jsonify(final_log))
         return jsonify(final_log), 500
