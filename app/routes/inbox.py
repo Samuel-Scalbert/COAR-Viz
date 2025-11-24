@@ -82,6 +82,7 @@ def save_json(file, folder="./app/static/data/json"):
         else:
             data_json = file
             file_name = data_json.get("file_hal_id", "unnamed")
+            file_name = file_name[:-3]
 
         json_path = os.path.join(folder, f"{file_name}.json")
 
