@@ -332,144 +332,62 @@ def insert_json_db(data_path_json,data_path_xml,db):
             document_document.save()
 
             # SOFTWARE -----------------------------------------------------
-            print("\n===== START MENTION/REFERENCE PROCESSING =====")
-
-            print(f"[DEBUG] Incoming file_name: {file_name}")
-            print(f"[DEBUG] data_json_files available: {data_json_files}")
-            print(f"[DEBUG] json_path candidate: {json_path}")
-
-            # --- FILE NAME NORMALIZATION LOGS ----------------------------------------------------
-
             if f"{file_name}.json" in data_json_files:
-                print(f"[DEBUG] Found exact JSON file match: {file_name}.json")
+                pass
             else:
                 print(f"[DEBUG] JSON file not found with exact name: {file_name}.json")
                 if file_name[-2] == "v":
-                    print("[DEBUG] Version suffix detected. Normalizing file name...")
-                    old_name = file_name
-                    file_name = file_name[:-3] + "_" + file_name[-2:]
-                    print(f"[DEBUG] file_name changed: {old_name} → {file_name}")
-                else:
-                    print("[DEBUG] No version suffix, keeping original file_name")
-
-            # --- SECOND CHECK AFTER NORMALIZATION ------------------------------------------------
-
+                   file_name = file_name[:-3] + "_" + file_name[-2:]
             if f"{file_name}.json" in data_json_files:
-                print(f"[DEBUG] JSON file FOUND after normalization: {file_name}.json")
-
-                print(f"[DEBUG] Attempting to open JSON file at: {json_path}")
-                try:
-                    with open(json_path, 'r') as json_file:
-                        print(f"[DEBUG] Successfully opened JSON file: {json_path}")
-                        data_json = json.load(json_file)
-                except Exception as e:
-                    print(f"[ERROR] Failed to load JSON: {e}")
-                    print(f"[ERROR] File content preview:")
-                    try:
-                        print(open(json_path, "r").read()[:500])
-                    except:
-                        print("[ERROR] Could not read file content")
-                    raise e
-
-                # --- MENTIONS --------------------------------------------------------------------
-                print("\n=== PROCESSING MENTIONS ===")
-
-                data_json_get_mentions = data_json.get("mentions")
-                print(f"[DEBUG] Raw mentions field: {data_json_get_mentions}")
-
-                if not data_json_get_mentions:
-                    print("[WARNING] No mentions found in JSON")
-                elif not isinstance(data_json_get_mentions, list):
-                    print(f"[ERROR] mentions is not a list, type={type(data_json_get_mentions)}")
-                else:
-                    print(f"[DEBUG] Count of mentions before duplicate removal: {len(data_json_get_mentions)}")
-
+                with open(json_path, 'r') as json_file:
+                    print(json_path)
+                    print("yo", json_file)
+                    data_json = json.load(json_file)
+                    data_json_get_mentions = data_json.get("mentions")
+                    print(data_json_get_mentions)
                     # Remove duplicates
-                    dupes = duplicates_JSON(data_json_get_mentions)
-                    print(f"[DEBUG] duplicates identified: {dupes}")
-                    for elm in dupes:
+                    for elm in duplicates_JSON(data_json_get_mentions):
                         data_json_get_mentions.remove(elm)
 
-                    print(f"[DEBUG] Count after duplicate removal: {len(data_json_get_mentions)}")
-
+                    # Process each mention
                     for mention in data_json_get_mentions:
-                        print("\n--- Mention Object ---")
-                        print(json.dumps(mention, indent=2))
-
-                        if "software-name" not in mention:
-                            print("[ERROR] Mention missing 'software-name' field. Skipping.")
-                            continue
-
-                        normalized_name = mention['software-name'].get('normalizedForm')
-                        print(f"[DEBUG] normalized software name: {normalized_name}")
-
-                        if normalized_name in blacklist:
-                            print(f"[INFO] {normalized_name} is blacklisted → SKIPPING")
-                            continue
-
-                        # Rename fields
-                        mention['software_name'] = mention.pop('software-name')
-                        mention['software_type'] = mention.pop('software-type')
-
-                        try:
-                            print("[DEBUG] Saving software mention to DB...")
+                        print(mention)
+                        if mention['software-name']['normalizedForm'] not in blacklist:
+                            mention['software_name'] = mention.pop('software-name')
+                            mention['software_type'] = mention.pop('software-type')
                             software_document = softwares_collection.createDocument(mention)
                             software_document.save()
-                            print(f"[SUCCESS] Saved mention: {software_document._id}")
 
-                            # Create edge
+                            # Create edge from document to software
                             edge_doc_soft = doc_soft_edge.createEdge()
                             edge_doc_soft['_from'] = document_document._id
                             edge_doc_soft['_to'] = software_document._id
                             edge_doc_soft.save()
-
-                            print(f"[SUCCESS] Created edge doc → mention: {edge_doc_soft._id}")
-
                             update_nb_mention(db)
-                        except Exception as e:
-                            print(f"[ERROR] Failed saving mention: {e}")
 
-                # --- REFERENCES ------------------------------------------------------------------------
+            # REFERENCES -----------------------------------------------------
 
-                print("\n=== PROCESSING REFERENCES ===")
-
-                data_json_get_references = data_json.get("references")
-                print(f"[DEBUG] Raw references field: {data_json_get_references}")
-
-                if not data_json_get_references:
-                    print("[WARNING] No references found in JSON")
-                else:
+                    # Process each reference
+                    data_json_get_references = data_json.get("references")
                     for reference in data_json_get_references:
-                        print("\n--- Reference Object ---")
-                        print(json.dumps(reference, indent=2))
-
                         result_json = []
                         try:
-                            result_json, error = transformer_TEI_JSON(reference.get("tei"))
+                            result_json,error = transformer_TEI_JSON(reference['tei'])
                             if len(error) > 0:
-                                print(f"[WARNING] Errors while parsing TEI: {error}")
-                                list_errors.append(error, reference.get("tei"))
+                                list_errors.append(error, reference['tei'])
                         except Exception as e:
-                            print(f"[ERROR] transformer_TEI_JSON EXCEPTION: {e}")
-
+                            print(f"Error during the transformation from XML to JSON: {e}")
                         if result_json:
-                            print("[DEBUG] Result JSON from TEI:")
-                            print(json.dumps(result_json, indent=2))
-                            reference["json"] = result_json
+                            reference['json'] = result_json
+                        references_document = references_collection.createDocument(reference)
+                        references_document.save()
 
-                        try:
-                            references_document = references_collection.createDocument(reference)
-                            references_document.save()
-                            print(f"[SUCCESS] Saved reference: {references_document._id}")
-
-                            edge_doc_ref = doc_ref_edge.createEdge()
-                            edge_doc_ref['_from'] = document_document._id
-                            edge_doc_ref['_to'] = references_document._id
-                            edge_doc_ref.save()
-                            print(f"[SUCCESS] Created edge doc → reference: {edge_doc_ref._id}")
-
-                        except Exception as e:
-                            print(f"[ERROR] Failed saving reference: {e}")
+                        # Create edge from document to reference
+                        edge_doc_ref = doc_ref_edge.createEdge()
+                        edge_doc_ref['_from'] = document_document._id
+                        edge_doc_ref['_to'] = references_document._id
+                        edge_doc_ref.save()
+                # Define the AQL query to fetch software names and their counts
 
                 # --- SOFTWARE COUNT QUERY -------------------------------------------------------
 
