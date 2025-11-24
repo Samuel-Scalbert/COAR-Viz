@@ -105,7 +105,6 @@ def update_nb_notification(db, filename):
         result = db.AQLQuery(query, rawResults=True)
         result = result[0]
         result['filenames'] = len(result['filenames'])
-        print(f"✅ Updated notification for {today_str}: {result}")
         return result
 
     except AQLQueryError as e:
@@ -264,7 +263,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
                 data_json_get_document = {}
                 tree = ET.parse(xml_file)
         except Exception as e:
-            return f'Error with the xml parsing of the file: {e}'
+            return f'Error with the xml parsing of the file: {e} {file_path}'
 
         with open(file_path, 'r', encoding='utf-8') as xml_file:
             data_json_get_document = {}
@@ -335,7 +334,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
             if f"{file_name}.json" in data_json_files:
                 pass
             else:
-                print(f"[DEBUG] JSON file not found with exact name: {file_name}.json")
                 if file_name[-2] == "v":
                    file_name = file_name[:-3] + "_" + file_name[-2:]
             if f"{file_name}.json" in data_json_files:
@@ -387,27 +385,8 @@ def insert_json_db(data_path_json,data_path_xml,db):
                         edge_doc_ref['_from'] = document_document._id
                         edge_doc_ref['_to'] = references_document._id
                         edge_doc_ref.save()
-                # Define the AQL query to fetch software names and their counts
-
-                # --- SOFTWARE COUNT QUERY -------------------------------------------------------
-
-                query = f"""
-                FOR doc IN edge_software
-                    FILTER doc._from == "{document_document._id}"
-                    LET software = DOCUMENT(doc._to)
-                    COLLECT softwareName = software.software_name.normalizedForm WITH COUNT INTO count
-                    RETURN {{ softwareName, count }}
-                """
-
-                print("\n=== RUNNING AQL SOFTWARE COUNT QUERY ===")
-                print(query)
-
             else:
-                print(f"[ERROR] JSON file NOT FOUND after normalization: {file_name}.json")
-                print(f"[DEBUG] Available files: {data_json_files}")
-
-            print("===== END MENTION/REFERENCE PROCESSING =====\n")
-
+                print(f"[DEBUG] JSON file not found with exact name: {file_name}.json")
             # AUTHORS -----------------------------------------------------
 
             author_list = tree.findall(".//tei:listBibl//tei:titleStmt//tei:author", ns)
