@@ -135,6 +135,7 @@ def insert_json():
 
     if "file" not in request.files:
         final_log["errors"].append("No file found in request")
+        print(final_log)
         return jsonify(final_log), 400
 
     file = request.files["file"]
@@ -154,6 +155,7 @@ def insert_json():
 
         if response.status_code != 200:
             final_log["errors"].append(f"Failed to download XML for {hal_id}")
+            print(final_log)
             return jsonify(final_log), 500
 
         data = response.text
@@ -171,6 +173,7 @@ def insert_json():
 
     except Exception as e:
         final_log["errors"].append(f"Exception while downloading XML: {str(e)}")
+        print(final_log)
         return jsonify(final_log), 500
 
     # ------------------ 3. JSON SAVE ------------------
@@ -189,6 +192,7 @@ def insert_json():
 
     except Exception as e:
         final_log["errors"].append(f"Exception while saving JSON: {str(e)}")
+        print(final_log)
         return jsonify(final_log), 500
 
     # ------------------ 4. DATABASE INSERTION ------------------
@@ -210,14 +214,17 @@ def insert_json():
             final_log["status"] = "success"
             final_log["db_status"] = "inserted"
             final_log["step"] = "Completed"
+            print(final_log)
             return jsonify(final_log), 201
 
         else:
             final_log["status"] = "conflict"
             final_log["db_status"] = "already_registered"
             final_log["step"] = "Completed"
+            print(final_log)
             return jsonify(final_log), 409
 
     except Exception as e:
         final_log["errors"].append(f"Database insertion failed: {str(e)}")
+        print(final_log)
         return jsonify(final_log), 500
