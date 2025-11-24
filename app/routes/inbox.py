@@ -109,13 +109,13 @@ def insert_json():
 
         if inserted == True:
             update_nb_notification(db, hal_id)
-            try:
+            '''try:
                 if os.path.exists(xml_path):
                     os.remove(xml_path)
                 if os.path.exists(json_path):
                     os.remove(json_path)
             except Exception as e:
-                print(f"Error deleting files: {e}")
+                print(f"Error deleting files: {e}")'''
 
             print({
                 "status": "inserted",
