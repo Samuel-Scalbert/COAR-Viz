@@ -24,22 +24,32 @@ def ensure_folder(path):
     os.makedirs(path, exist_ok=True)
     return path
 
+# -----------------------------
+# HELPERS
+# -----------------------------
+def print_log(log_dict):
+    """Pretty console logging without Flask jsonify wrapper."""
+    print("---- FINAL LOG ----")
+    print(json.dumps(log_dict, indent=4, ensure_ascii=False))
+    print("-------------------")
+
+
+def ensure_folder(path):
+    os.makedirs(path, exist_ok=True)
+    return path
+
 
 def save_xml(hal_id, xml_content, folder="./app/static/data/xml"):
     ensure_folder(folder)
     xml_path = os.path.join(folder, f"{hal_id}.xml")
 
-    # Unescape XML entities first (HAL sometimes double-encodes)
     decoded_xml = unescape(xml_content)
-
-    # Escape stray ampersands not part of a valid entity
-    # (matches & not followed by # or a word+semicolon)
     safe_xml = re.sub(r'&(?!#?\w+;)', '&amp;', decoded_xml)
 
     try:
         xml_parsed = minidom.parseString(safe_xml)
         pretty_xml = xml_parsed.toprettyxml(indent="  ", encoding="utf-8")
-    except Exception as e:
+    except Exception:
         pretty_xml = safe_xml.encode("utf-8")
 
     with open(xml_path, "wb") as f:
@@ -49,19 +59,25 @@ def save_xml(hal_id, xml_content, folder="./app/static/data/xml"):
 
 def save_json(file, folder="./app/static/data/json"):
     ensure_folder(folder)
+
     if hasattr(file, "read"):
         file.seek(0)
         data_json = json.load(file)
-        file_name = getattr(file, "filename", "unnamed").replace(".software.json", "")
+        file_name = file.filename.replace(".software.json", "")
     else:
         data_json = file
         file_name = data_json.get("file_hal_id", "unnamed")
+
     json_path = os.path.join(folder, f"{file_name}.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(data_json, f, ensure_ascii=False, indent=4)
+
     return json_path
 
 
+# -----------------------------
+# MAIN ROUTE
+# -----------------------------
 @app.route('/insert_json', methods=['POST'])
 def insert_json():
     final_log = {
@@ -76,10 +92,13 @@ def insert_json():
         "errors": []
     }
 
+    # -----------------------------
+    # VALIDATE INPUT FILE
+    # -----------------------------
     if "file" not in request.files:
         final_log["status"] = "error"
         final_log["errors"].append("No file provided")
-        print(jsonify(final_log))
+        print_log(final_log)
         return jsonify(final_log), 400
 
     file = request.files["file"]
@@ -88,42 +107,42 @@ def insert_json():
     final_log["file_name"] = file.filename
 
     # -----------------------------
-    # DOWNLOAD HAL TEI XML
+    # DOWNLOAD XML FROM HAL
     # -----------------------------
     final_log["step"] = "Downloading HAL TEI XML"
     url = "https://api.archives-ouvertes.fr/search/"
 
-    if hal_id[-2] == "v":
-        hal_id_cleaned_wt_version = hal_id[:-2]
-        params = {"q": f"halId_id:{hal_id_cleaned_wt_version}", "fl": "label_xml", "wt": "xml-tei"}
-    else:
-        params = {"q": f"halId_id:{hal_id}", "fl": "label_xml", "wt": "xml-tei"}
+    hal_id_cleaned = hal_id[:-2] if hal_id.endswith("v") else hal_id
+    params = {
+        "q": f"halId_id:{hal_id_cleaned}",
+        "fl": "label_xml",
+        "wt": "xml-tei"
+    }
 
     try:
         response = requests.get(url, params=params, timeout=30)
+
         if response.status_code != 200:
             final_log["status"] = "error"
-            final_log["errors"].append(
-                f"Could not download XML (status {response.status_code})"
-            )
-            print(jsonify(final_log))
+            final_log["errors"].append(f"Could not download XML (status {response.status_code})")
+            print_log(final_log)
             return jsonify(final_log), 500
 
-        decoded_xml = unescape(response.text)
-        xml_path = save_xml(hal_id, decoded_xml)
+        xml_path = save_xml(hal_id, response.text)
         final_log["xml_download"] = "success"
         final_log["paths"]["xml"] = xml_path
 
     except Exception as e:
         final_log["status"] = "error"
         final_log["errors"].append(f"Exception while downloading XML: {str(e)}")
-        print(jsonify(final_log))
+        print_log(final_log)
         return jsonify(final_log), 500
 
     # -----------------------------
     # SAVE JSON FILE
     # -----------------------------
     final_log["step"] = "Saving JSON file"
+
     try:
         json_path = save_json(file)
         final_log["json_saved"] = "success"
@@ -131,7 +150,7 @@ def insert_json():
     except Exception as e:
         final_log["status"] = "error"
         final_log["errors"].append(f"Exception while saving JSON: {str(e)}")
-        print(jsonify(final_log))
+        print_log(final_log)
         return jsonify(final_log), 500
 
     # -----------------------------
@@ -141,7 +160,7 @@ def insert_json():
 
     try:
         files_registered = db.AQLQuery(
-            f'FOR hal_id IN documents FILTER hal_id.file_hal_id == "{hal_id}" RETURN hal_id._id',
+            f'FOR d IN documents FILTER d.file_hal_id == "{hal_id}" RETURN d._id',
             rawResults=True,
             batchSize=2000
         )
@@ -156,7 +175,7 @@ def insert_json():
             final_log["status"] = "success"
             final_log["step"] = "Completed"
 
-            print(jsonify(final_log))
+            print_log(final_log)
             return jsonify(final_log), 201
 
         else:
@@ -164,11 +183,11 @@ def insert_json():
             final_log["status"] = "conflict"
             final_log["step"] = "Completed"
 
-            print(jsonify(final_log))
+            print_log(final_log)
             return jsonify(final_log), 409
 
     except Exception as e:
         final_log["status"] = "error"
         final_log["errors"].append(f"Database insertion failed: {str(e)}")
-        print(jsonify(final_log))
+        print_log(final_log)
         return jsonify(final_log), 500
