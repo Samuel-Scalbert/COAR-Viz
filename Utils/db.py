@@ -380,6 +380,9 @@ def insert_json_db(data_path_json,data_path_xml,db):
                     COLLECT softwareName = software.software_name.normalizedForm WITH COUNT INTO count
                     RETURN {{ softwareName, count }}
                 """
+            else:
+                print(f"{file_name} no json found")
+
 
             # AUTHORS -----------------------------------------------------
 
