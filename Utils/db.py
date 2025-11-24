@@ -385,7 +385,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
                     RETURN {{ softwareName, count }}
                 """
             else:
-                print(f"{file_name} no json found / {data_json_files}")
+                print(f"{file_name}.json no json found / {data_json_files}")
 
 
             # AUTHORS -----------------------------------------------------

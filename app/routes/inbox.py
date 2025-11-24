@@ -44,7 +44,7 @@ def save_xml(hal_id, xml_content, folder="./app/static/data/xml"):
 
     with open(xml_path, "wb") as f:
         f.write(pretty_xml)
-
+    print(f"Saved {xml_path}")
     return xml_path
 
 
@@ -60,6 +60,7 @@ def save_json(file, folder="./app/static/data/json"):
     json_path = os.path.join(folder, f"{file_name}.json")
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(data_json, f, ensure_ascii=False, indent=4)
+    print(f"Saved {json_path}")
     return json_path
 
 
