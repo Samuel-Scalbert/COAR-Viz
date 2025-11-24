@@ -207,7 +207,8 @@ def insert_json():
 
         inserted = len(files_registered) == 0
 
-        insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
+        print(insert_json_db("./app/static/data/json", "./app/static/data/xml", db))
+
 
         if inserted:
             update_nb_notification(db, hal_id)
