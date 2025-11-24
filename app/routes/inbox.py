@@ -66,73 +66,104 @@ def save_json(file, folder="./app/static/data/json"):
 
 @app.route('/insert_json', methods=['POST'])
 def insert_json():
+    final_log = {
+        "step": "",
+        "status": "",
+        "hal_id": "",
+        "file_name": "",
+        "xml_download": "",
+        "json_saved": "",
+        "db_insertion": "",
+        "paths": {},
+        "errors": []
+    }
+
     if "file" not in request.files:
-        return jsonify({"error": "No file provided"}), 400
+        final_log["status"] = "error"
+        final_log["errors"].append("No file provided")
+        return jsonify(final_log), 400
 
     file = request.files["file"]
     hal_id = request.form.get("document_id")
+    final_log["hal_id"] = hal_id
+    final_log["file_name"] = file.filename
 
-    # Download HAL TEI XML
+    # -----------------------------
+    # DOWNLOAD HAL TEI XML
+    # -----------------------------
+    final_log["step"] = "Downloading HAL TEI XML"
     url = "https://api.archives-ouvertes.fr/search/"
+
     if hal_id[-2] == "v":
         hal_id_cleaned_wt_version = hal_id[:-2]
         params = {"q": f"halId_id:{hal_id_cleaned_wt_version}", "fl": "label_xml", "wt": "xml-tei"}
     else:
         params = {"q": f"halId_id:{hal_id}", "fl": "label_xml", "wt": "xml-tei"}
+
     try:
         response = requests.get(url, params=params, timeout=30)
         if response.status_code != 200:
-            return jsonify(
-                {"error": f"Could not download XML for the file {hal_id}, status code: {response.status_code}"}), 500
-        data = response.text
-        decoded_xml = unescape(data)
-        xml_path = save_xml(hal_id, decoded_xml)
-    except Exception as e:
-        return jsonify({"error": f"Exception while downloading XML: {str(e)}"}), 500
+            final_log["status"] = "error"
+            final_log["errors"].append(
+                f"Could not download XML (status {response.status_code})"
+            )
+            return jsonify(final_log), 500
 
+        decoded_xml = unescape(response.text)
+        xml_path = save_xml(hal_id, decoded_xml)
+        final_log["xml_download"] = "success"
+        final_log["paths"]["xml"] = xml_path
+
+    except Exception as e:
+        final_log["status"] = "error"
+        final_log["errors"].append(f"Exception while downloading XML: {str(e)}")
+        return jsonify(final_log), 500
+
+    # -----------------------------
+    # SAVE JSON FILE
+    # -----------------------------
+    final_log["step"] = "Saving JSON file"
     try:
         json_path = save_json(file)
+        final_log["json_saved"] = "success"
+        final_log["paths"]["json"] = json_path
     except Exception as e:
-        return jsonify({"error": f"Exception while saving JSON: {str(e)}"}), 500
+        final_log["status"] = "error"
+        final_log["errors"].append(f"Exception while saving JSON: {str(e)}")
+        return jsonify(final_log), 500
+
+    # -----------------------------
+    # DATABASE INSERTION
+    # -----------------------------
+    final_log["step"] = "Database insertion"
 
     try:
-        files_registered = db.AQLQuery(f'FOR hal_id in documents filter hal_id.file_hal_id == "{hal_id}" RETURN hal_id._id', rawResults=True, batchSize=2000)
-        if len(files_registered) >= 1:
-            inserted = False
-        else:
-            inserted = True
+        files_registered = db.AQLQuery(
+            f'FOR hal_id IN documents FILTER hal_id.file_hal_id == "{hal_id}" RETURN hal_id._id',
+            rawResults=True,
+            batchSize=2000
+        )
 
-        '''print('id:', hal_id)
-        listinserted = db.AQLQuery(f'FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True,batchSize=2000)
-        print('list inserted:', listinserted)'''
+        inserted = len(files_registered) == 0
 
         insert_json_db("./app/static/data/json", "./app/static/data/xml", db)
 
-        if inserted == True:
+        if inserted:
             update_nb_notification(db, hal_id)
-            '''try:
-                if os.path.exists(xml_path):
-                    os.remove(xml_path)
-                if os.path.exists(json_path):
-                    os.remove(json_path)
-            except Exception as e:
-                print(f"Error deleting files: {e}")'''
+            final_log["db_insertion"] = "inserted"
+            final_log["status"] = "success"
+            final_log["step"] = "Completed"
 
-            print({
-                "status": "inserted",
-                "file": file.filename,
-            })
+            return jsonify(final_log), 201
 
-            return jsonify({
-                "status": "inserted",
-                "file": file.filename,
-                "xml_path": xml_path,
-                "json_path": json_path
-            }), 201
-        elif inserted == False:
-            print({"status": "already registered", "file": file.filename})
-            return jsonify({"status": "already registered", "file": file.filename}), 409
         else:
-            return jsonify({"error": f"Database insertion failed: {str(inserted)}"}), 500
+            final_log["db_insertion"] = "already_registered"
+            final_log["status"] = "conflict"
+            final_log["step"] = "Completed"
+
+            return jsonify(final_log), 409
+
     except Exception as e:
-        return jsonify({"error": f"Database insertion failed: {str(e)}"}), 500
+        final_log["status"] = "error"
+        final_log["errors"].append(f"Database insertion failed: {str(e)}")
+        return jsonify(final_log), 500
