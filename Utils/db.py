@@ -272,6 +272,14 @@ def insert_json_db(data_path_json,data_path_xml,db):
             root = tree.getroot()
             ns = {"tei": "http://www.tei-c.org/ns/1.0", 'xml': 'http://www.w3.org/XML/1998/namespace'}
 
+            # Find the measure with commodity="totalSearchResults"
+            measure_elem = tree.find(".//tei:profileDesc/tei:creation/tei:measure[@commodity='totalSearchResults']", ns)
+            print(measure_elem)
+            if measure_elem is not None:
+                quantity = measure_elem.get("quantity")
+                if quantity == 0:
+                    print(f"The xml returned is empty for {file_name}")
+                    continue
 
             # DOCUMENT -----------------------------------------------------
 
