@@ -32,6 +32,63 @@ def delete_document_and_edges(db, doc_id, collection_name):
     doc.delete()
     print(f"Deleted document: {doc_id}")
 
+def test_delete_document_and_edges(db, doc_id, collection_name):
+    log = []   # <-- collect all items that would be deleted
+
+    edge_collections = [
+        'edge_doc_to_struc',
+        'edge_auth_to_struc',
+        'edge_doc_to_software',
+        'edge_doc_to_reference',
+        'edge_doc_to_author',
+        'edge_auth_to_rel_struc'
+    ]
+
+    # Check edges that would be deleted
+    for edge_name in edge_collections:
+        query = f'''
+        FOR edge IN {edge_name}
+            FILTER edge._from == "{doc_id}" OR edge._to == "{doc_id}"
+            RETURN edge
+        '''
+
+        edges = db.AQLQuery(query, rawResults=True)
+
+        # If edges were found, record them
+        for edge in edges:
+            log.append({
+                "type": "edge",
+                "collection": edge_name,
+                "id": edge["_id"],
+                "from": edge["_from"],
+                "to": edge["_to"],
+                "action": "would_delete"
+            })
+
+    # Check document that would be deleted
+    key = doc_id.split('/')[-1]
+    collection = db[collection_name]
+
+    try:
+        doc = collection[key]
+        log.append({
+            "type": "document",
+            "collection": collection_name,
+            "id": doc_id,
+            "action": "would_delete",
+            "data": dict(doc)  # include full doc content
+        })
+    except KeyError:
+        log.append({
+            "type": "document",
+            "collection": collection_name,
+            "id": doc_id,
+            "action": "not_found"
+        })
+
+    return log
+
+
 BLACKLIST_PATH = './app/static/data/blacklist.csv'
 
 
@@ -81,9 +138,8 @@ def update_db_blacklist():
     for software_document in list_software_documents:
         if software_document[1] in blacklist:
             software_id = software_document[0]
-            software_name = software_document[1]
-            deleted_mention = {"id": software_id, "software": software_name}
-            deleted_mention_list.append(deleted_mention)
+            log_message = test_delete_document_and_edges(db, software_id, "softwares")
+            deleted_mention_list.append(log_message)
             #delete_document_and_edges(db, software_id, "softwares")
 
     return jsonify({"message": "Database blacklist updated", "deleted_mention": deleted_mention_list})
