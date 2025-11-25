@@ -194,7 +194,7 @@ def links_id_from_struc(struc):
 @app.route('/api/author/<author_halauthorid>')
 def author_info(author_halauthorid):
     data = author_info_from_id(author_halauthorid)
-    return jsonify(data[0:])
+    return (list(data))
 
 @app.route('/api/author/list_authors')
 def list_authors():
@@ -204,7 +204,7 @@ def list_authors():
         '''
     # Execute the query and return the response as a list
     data = db.AQLQuery(query, rawResults=True, batchSize=2000)
-    return jsonify(data[0:])
+    return (list(data))
 
 @app.route('/api/list_type_institution')
 def list_type_institution():
@@ -213,9 +213,8 @@ def list_type_institution():
             RETURN DISTINCT struc.type
         '''
     # Execute the query and return the response as a list
-    data_cursor = db.AQLQuery(query, rawResults=True, batchSize=2000)
-    data_list = list(data_cursor)  # <- clé : convertir en liste complète
-    return jsonify(data_list)
+    data = db.AQLQuery(query, rawResults=True, batchSize=2000)
+    return (list(data))
 
 @app.route('/api/list_institution/<type_institution>')
 def list_from_type_institution(type_institution):
@@ -226,7 +225,7 @@ def list_from_type_institution(type_institution):
                 '''
     # Execute the query and return the response as a list
     data = db.AQLQuery(query, rawResults=True, batchSize=2000)
-    return jsonify(data[0:])
+    return (list(data))
 
 @app.route('/api/list_institution/<type_institution>/<specificStructId>')
 def list_from_type_institution_and_a_struct(type_institution,specificStructId):
@@ -252,7 +251,7 @@ def list_from_type_institution_and_a_struct(type_institution,specificStructId):
                 '''
     # Execute the query and return the response as a list
     data = db.AQLQuery(query, rawResults=True, batchSize=2000)
-    return jsonify(data[0:])
+    return (list(data))
 
 @app.route("/api/list_institution/<type_institution>/chart_halid/<halid>")
 def list_from_type_institution_halid(type_institution, halid):
@@ -267,7 +266,7 @@ def list_from_type_institution_halid(type_institution, halid):
                     '''
     # Execute the query and return the response as a list
     data = db.AQLQuery(query, rawResults=True, batchSize=2000)
-    return data[0:]
+    return (list(data))
 
 @app.route("/api/soft_aut/<hal_id>")
 def list_auth_from_halid(hal_id):
@@ -281,7 +280,7 @@ def list_auth_from_halid(hal_id):
                     '''
     # Execute the query and return the response as a list
     data = db.AQLQuery(query, rawResults=True, batchSize=2000)
-    return data[0:]
+    return (list(data))
 
 @app.route("/api/soft/<struc_id>")
 def str_from_halid(struc_id):
@@ -292,7 +291,7 @@ def str_from_halid(struc_id):
                     '''
     # Execute the query and return the response as a list
     data = db.AQLQuery(query, rawResults=True, batchSize=1)
-    return data[0:]
+    return (list(data))
 
 @app.route("/api/notification_count")
 def notification_count():
