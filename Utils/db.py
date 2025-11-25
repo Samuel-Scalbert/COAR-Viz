@@ -1,12 +1,12 @@
 import os
 import json
 from pyArango.theExceptions import AQLQueryError
-from openpyxl import load_workbook
 from Utils.TEI_to_JSON import transformer_TEI_JSON
 import requests
 from datetime import date
 import xml.etree.ElementTree as ET
 import re
+import csv
 
 def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log"):
     """
@@ -246,15 +246,15 @@ def insert_json_db(data_path_json,data_path_xml,db):
         return "Elasticsearch is not alive (launch the docker)"
 
     list_errors = []
-    workbook = load_workbook(filename='./app/static/data/Logiciels_Blacklist_et_autres_remarques.xlsx')
-    sheet = workbook.active
-    data = []
-    for row in sheet.iter_rows(values_only=True):
-        data.append(row)
+
     blacklist = []
-    for row in data[1:]:
-        blacklist.append(row[0])
-    urls_verified_sh = []
+
+    with open('./app/static/data/blacklist.csv', newline='', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+        next(reader)  # skip header
+        for row in reader:
+            if row:  # skip empty rows
+                blacklist.append(row[0])
 
     # Create or retrieve collections
     documents_collection = check_or_create_collection(db, 'documents')
