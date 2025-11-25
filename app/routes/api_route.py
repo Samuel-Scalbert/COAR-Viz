@@ -6,6 +6,19 @@ from flask import jsonify, Response
 from datetime import date, timedelta
 import json
 
+# Helper to stream a cursor as JSON
+def stream_cursor(cursor):
+    def generate():
+        yield '['
+        first = True
+        for item in cursor:
+            if not first:
+                yield ','
+            yield json.dumps(item)
+            first = False
+        yield ']'
+    return Response(generate(), mimetype='application/json')
+
 @app.route('/api/disambiguate/list_software')
 def list_software():
     query = f'''
@@ -216,16 +229,21 @@ def list_type_institution():
     data = db.AQLQuery(query, rawResults=True, batchSize=2000)
     return (list(data))
 
+# List institutions of a given type
 @app.route('/api/list_institution/<type_institution>')
 def list_from_type_institution(type_institution):
     query = f'''
-        FOR affiliation in structures
+        FOR affiliation IN structures
             FILTER affiliation.type == "{type_institution}"
-            RETURN distinct {{acronym :affiliation.acronym, name : affiliation.name, status: affiliation.status, ref: affiliation.id_haureal}}
-                '''
-    # Execute the query and return the response as a list
-    data = db.AQLQuery(query, rawResults=True, batchSize=2000)
-    return (list(data))
+            RETURN DISTINCT {{
+                acronym: affiliation.acronym,
+                name: affiliation.name,
+                status: affiliation.status,
+                ref: affiliation.id_haureal
+            }}
+    '''
+    cursor = db.AQLQuery(query, rawResults=True, batchSize=2000)
+    return stream_cursor(cursor)
 
 @app.route('/api/list_institution/<type_institution>/<specificStructId>')
 def list_from_type_institution_and_a_struct(type_institution,specificStructId):
