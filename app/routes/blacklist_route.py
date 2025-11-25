@@ -37,8 +37,6 @@ BLACKLIST_PATH = './app/static/data/blacklist.csv'
 
 @app.route('/update_blacklist/<software_name>')
 def update_blacklist(software_name):
-    # Normalize software name
-    software_name = software_name
 
     # Read existing blacklist
     existing = set()
@@ -48,7 +46,7 @@ def update_blacklist(software_name):
             next(reader)  # skip header
             for row in reader:
                 if row:
-                    existing.add(row[0].lower())
+                    existing.add(row[0])
 
     # Check if already added
     if software_name in existing:
