@@ -264,6 +264,11 @@ def insert_json_db(data_path_json,data_path_xml,db):
                 data_json_get_document = {}
                 tree = ET.parse(xml_file)
         except Exception as e:
+            with open(file_path, "rb") as f:
+                data = f.read()
+            # Look around the error position (±50 bytes)
+            pos = 11109
+            print("wrong bytes:",data[pos - 50:pos + 50])
             return f'Error with the xml parsing of the file: {e} {file_path}'
 
         with open(file_path, 'r', encoding='utf-8') as xml_file:
@@ -345,7 +350,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
 
                     # Process each mention
                     for mention in data_json_get_mentions:
-                        print(mention)
                         if mention['software-name']['normalizedForm'] not in blacklist:
                             mention['software_name'] = mention.pop('software-name')
                             mention['software_type'] = mention.pop('software-type')
