@@ -136,7 +136,7 @@ def insert_json():
 
     if "file" not in request.files:
         final_log["errors"].append("No file found in request")
-        print(final_log)
+        print("🟥", final_log, "\n")
         return jsonify(final_log), 400
 
     file = request.files["file"]
@@ -157,7 +157,7 @@ def insert_json():
 
         if response.status_code != 200:
             final_log["errors"].append(f"Failed to download XML for {hal_id}")
-            print(final_log)
+            print("🟥", final_log, "\n")
             return jsonify(final_log), 500
 
         data = response.text
@@ -172,10 +172,11 @@ def insert_json():
             final_log["xml"] = "failed"
             final_log["errors"].append(xml_result["error"])
             final_log["paths"]["xml"] = xml_result["path"]
+            xml_path = xml_result["path"]
 
     except Exception as e:
         final_log["errors"].append(f"Exception while downloading XML: {str(e)}")
-        print(final_log)
+        print("🟥", final_log, "\n")
         return jsonify(final_log), 500
 
     # ------------------ 3. JSON SAVE ------------------
@@ -191,43 +192,38 @@ def insert_json():
             final_log["json"] = "failed"
             final_log["errors"].append(json_result["error"])
             final_log["paths"]["json"] = json_result["path"]
+            json_path = json_result["path"]
 
     except Exception as e:
         final_log["errors"].append(f"Exception while saving JSON: {str(e)}")
-        print(final_log)
+        print("🟥", final_log, "\n")
         return jsonify(final_log), 500
 
     # ------------------ 4. DATABASE INSERTION ------------------
     final_log["step"] = "Database insertion"
 
-    try:
-        files_registered = db.AQLQuery(
-            f'FOR d IN documents FILTER d.file_hal_id == "{hal_id}" RETURN d._id',
-            rawResults=True,
-            batchSize=2000
-        )
+    files_registered = db.AQLQuery(
+        f'FOR d IN documents FILTER d.file_hal_id == "{hal_id}" RETURN d._id',
+        rawResults=True,
+        batchSize=2000
+    )
 
-        inserted = len(files_registered) == 0
+    inserted = len(files_registered) == 0
 
-        print(insert_json_db("./app/static/data/json", "./app/static/data/xml", db))
+    result = insert_json_db(json_path, xml_path, db)
 
+    if inserted and result[0] == "success":
+        update_nb_notification(db, hal_id)
+        final_log["status"] = "success"
+        final_log["db_status"] = "inserted"
+        final_log["step"] = "Completed"
+        print("🟩",final_log,"\n")
+        return jsonify(final_log), 201
 
-        if inserted:
-            update_nb_notification(db, hal_id)
-            final_log["status"] = "success"
-            final_log["db_status"] = "inserted"
-            final_log["step"] = "Completed"
-            print("🟩",final_log, "\n")
-            return jsonify(final_log), 201
+    else:
+        final_log["status"] = "error"
+        final_log["errors"].append(result[1])
+        final_log["step"] = result[0]
+        print("🟥",final_log,"\n")
+        return jsonify(final_log), 409
 
-        else:
-            final_log["status"] = "conflict"
-            final_log["db_status"] = "already_registered"
-            final_log["step"] = "Completed"
-            print(final_log)
-            return jsonify(final_log), 409
-
-    except Exception as e:
-        final_log["errors"].append(f"Database insertion failed: {str(e)}")
-        print(final_log)
-        return jsonify(final_log), 500
