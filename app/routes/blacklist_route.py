@@ -38,7 +38,7 @@ BLACKLIST_PATH = './app/static/data/blacklist.csv'
 @app.route('/update_blacklist/<software_name>')
 def update_blacklist(software_name):
     # Normalize software name
-    software_name = software_name.strip().lower()
+    software_name = software_name
 
     # Read existing blacklist
     existing = set()
@@ -76,12 +76,13 @@ def update_db_blacklist():
     query = f'''
             FOR soft IN softwares return [soft._id,soft.software_name.normalizedForm]
             '''
-    lis_software_documents = db.AQLQuery(query, rawResults=True)
-
-    for software_document in lis_software_documents:
+    list_software_documents = db.AQLQuery(query, rawResults=True)
+    for software_document in list_software_documents:
+        print(software_document)
         if software_document[1] in blacklist:
             software_id = software_document[0]
             print(software_document, software_id)
+            print('yo')
             #delete_document_and_edges(db, software_id, "softwares")
 
     return jsonify({"message": "Database blacklist updated"})
