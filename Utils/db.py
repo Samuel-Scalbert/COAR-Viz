@@ -232,14 +232,13 @@ def insert_json_db(data_path_json,data_path_xml,db):
             file_name, extension = os.path.splitext(file_name)
         json_path = f'{data_path_json}/{file_name}.json'
         if file_name in files_list_registered:
-            '''try:
+            try:
                 if os.path.exists(file_path):
                     os.remove(file_path)
                 if os.path.exists(json_path):
                     os.remove(json_path)
             except Exception as e:
                 print(f"Error deleting files: {e}", flush=True)
-            continue'''
             continue
 
         url = "https://api.archives-ouvertes.fr/search/"
@@ -260,6 +259,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
             print("Error:", response.status_code)
 
         try:
+            print(file_path)
             with open(file_path, 'r', encoding='utf-8') as xml_file:
                 data_json_get_document = {}
                 tree = ET.parse(xml_file)
@@ -268,7 +268,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
                 data = f.read()
             # Look around the error position (±50 bytes)
             pos = 11109
-            print("wrong bytes:",data[pos - 50:pos + 50])
+            print("wrong bytes:",data[pos - 100:pos + 100])
             return f'Error with the xml parsing of the file: {e} {file_path}'
 
         with open(file_path, 'r', encoding='utf-8') as xml_file:
