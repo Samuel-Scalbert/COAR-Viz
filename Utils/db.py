@@ -254,12 +254,31 @@ def insert_json_db(data_path_json,data_path_xml,db):
             citations = None
 
     try:
-        print(data_path_xml)
         with open(data_path_xml, 'r', encoding='utf-8') as xml_file:
-            data_json_get_document = {}
             tree = ET.parse(xml_file)
+    except ET.ParseError as e:
+        # Get line and column of the error if available
+        if hasattr(e, 'position'):
+            line, col = e.position
+            print(f"XML parsing error at line {line}, column {col}: {e}")
+
+            # Read file content to show snippet around the error
+            with open(data_path_xml, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            lines = content.splitlines(keepends=True)
+            abs_pos = sum(len(lines[i]) for i in range(line - 1)) + (col - 1)
+
+            start = max(0, abs_pos - 50)
+            end = min(len(content), abs_pos + 50)
+            snippet = content[start:end]
+            pointer = " " * (abs_pos - start) + "^ <-- invalid character here"
+
+            print(snippet)
+            print(pointer)
+        return ['XML Parsing', f'Error parsing XML file: {e} {data_path_xml}']
     except Exception as e:
-        return['XML Parsing',f'Error with the xml parsing of the file: {e} {data_path_xml}']
+        return ['XML Parsing', f'Unexpected error: {e} {data_path_xml}']
 
     with open(data_path_xml, 'r', encoding='utf-8') as xml_file:
         data_json_get_document = {}
