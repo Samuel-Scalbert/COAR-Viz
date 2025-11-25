@@ -213,8 +213,9 @@ def list_type_institution():
             RETURN DISTINCT struc.type
         '''
     # Execute the query and return the response as a list
-    data = db.AQLQuery(query, rawResults=True, batchSize=2000)
-    return jsonify(data[0:])
+    data_cursor = db.AQLQuery(query, rawResults=True, batchSize=2000)
+    data_list = list(data_cursor)  # <- clé : convertir en liste complète
+    return jsonify(data_list)
 
 @app.route('/api/list_institution/<type_institution>')
 def list_from_type_institution(type_institution):
