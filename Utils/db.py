@@ -1,11 +1,62 @@
 import os
 import json
 from pyArango.theExceptions import AQLQueryError
-import xml.etree.ElementTree as ET
 from openpyxl import load_workbook
 from Utils.TEI_to_JSON import transformer_TEI_JSON
 import requests
 from datetime import date
+import xml.etree.ElementTree as ET
+import re
+
+def parse_xml_safely(file_path, snippet_len=50):
+    """
+    Parses an XML file while bypassing illegal characters.
+    Prints a snippet around any invalid character if parsing fails.
+
+    Args:
+        file_path (str): Path to the XML file.
+        snippet_len (int): Number of characters before/after invalid character to show.
+
+    Returns:
+        ET.ElementTree: Parsed XML tree if successful.
+        None: If parsing fails.
+    """
+    try:
+        # Read file content
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # Remove illegal XML 1.0 characters (control chars except valid whitespace)
+        content_clean = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F]', '', content)
+
+        # Optionally remove invalid tokens like <!PCT!>
+        content_clean = re.sub(r'<![^>]+>', '', content_clean)
+
+        # Parse with ElementTree
+        tree = ET.ElementTree(ET.fromstring(content_clean))
+        return tree
+
+    except ET.ParseError as e:
+        # Handle parse error and print snippet
+        print("XML parsing error:", e)
+        if hasattr(e, 'position'):
+            line, col = e.position
+            print(f"Error at line {line}, column {col}")
+
+            # Compute absolute position
+            lines = content.splitlines(keepends=True)
+            abs_pos = sum(len(lines[i]) for i in range(line - 1)) + (col - 1)
+
+            start = max(0, abs_pos - snippet_len)
+            end = min(len(content), abs_pos + snippet_len)
+
+            snippet = content[start:end]
+            pointer = " " * (abs_pos - start) + "^ <-- invalid character here"
+
+            print(snippet)
+            print(pointer)
+        return None
+
 
 def is_elasticsearch_alive(host="http://172.19.0.1", port=9200, timeout=3):
     url = f"{host}:{port}/_cluster/health"
@@ -254,29 +305,9 @@ def insert_json_db(data_path_json,data_path_xml,db):
             citations = None
 
     try:
-        with open(data_path_xml, 'r', encoding='utf-8') as xml_file:
-            tree = ET.parse(xml_file)
-    except ET.ParseError as e:
-        # Get line and column of the error if available
-        if hasattr(e, 'position'):
-            line, col = e.position
-            print(f"XML parsing error at line {line}, column {col}: {e}")
-
-            # Read file content to show snippet around the error
-            with open(data_path_xml, 'r', encoding='utf-8') as f:
-                content = f.read()
-
-            lines = content.splitlines(keepends=True)
-            abs_pos = sum(len(lines[i]) for i in range(line - 1)) + (col - 1)
-
-            start = max(0, abs_pos - 50)
-            end = min(len(content), abs_pos + 50)
-            snippet = content[start:end]
-            pointer = " " * (abs_pos - start) + "^ <-- invalid character here"
-
-            print(snippet)
-            print(pointer)
-        return ['XML Parsing', f'Error parsing XML file: {e} {data_path_xml}']
+        tree = parse_xml_safely(data_path_xml)  # pass the file path, not the file object
+        if tree is None:
+            return ['XML Parsing', f'Error parsing XML file: {data_path_xml}']
     except Exception as e:
         return ['XML Parsing', f'Unexpected error: {e} {data_path_xml}']
 
