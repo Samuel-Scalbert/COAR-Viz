@@ -8,14 +8,15 @@ from datetime import date
 import xml.etree.ElementTree as ET
 import re
 
-def parse_xml_safely(file_path, snippet_len=50):
+def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log"):
     """
     Parses an XML file while bypassing illegal characters.
-    Prints a snippet around any invalid character if parsing fails.
+    Logs a snippet around any invalid character if parsing fails.
 
     Args:
         file_path (str): Path to the XML file.
-        snippet_len (int): Number of characters before/after invalid character to show.
+        snippet_len (int): Number of characters before/after invalid character to log.
+        log_file (str): Path to the log file where errors will be written.
 
     Returns:
         ET.ElementTree: Parsed XML tree if successful.
@@ -37,24 +38,27 @@ def parse_xml_safely(file_path, snippet_len=50):
         return tree
 
     except ET.ParseError as e:
-        # Handle parse error and print snippet
-        print("XML parsing error:", e)
-        if hasattr(e, 'position'):
-            line, col = e.position
-            print(f"Error at line {line}, column {col}")
+        with open(log_file, 'a', encoding='utf-8') as log:
+            log.write(f"\nXML parsing error in file: {file_path}\n")
+            log.write(f"Error message: {e}\n")
 
-            # Compute absolute position
-            lines = content.splitlines(keepends=True)
-            abs_pos = sum(len(lines[i]) for i in range(line - 1)) + (col - 1)
+            if hasattr(e, 'position'):
+                line, col = e.position
+                log.write(f"Error at line {line}, column {col}\n")
 
-            start = max(0, abs_pos - snippet_len)
-            end = min(len(content), abs_pos + snippet_len)
+                # Compute absolute position
+                lines = content.splitlines(keepends=True)
+                abs_pos = sum(len(lines[i]) for i in range(line - 1)) + (col - 1)
 
-            snippet = content[start:end]
-            pointer = " " * (abs_pos - start) + "^ <-- invalid character here"
+                start = max(0, abs_pos - snippet_len)
+                end = min(len(content), abs_pos + snippet_len)
 
-            print(snippet)
-            print(pointer)
+                snippet = content[start:end]
+                pointer = " " * (abs_pos - start) + "^ <-- invalid character here"
+
+                log.write(f"{snippet}\n")
+                log.write(f"{pointer}\n")
+
         return None
 
 
