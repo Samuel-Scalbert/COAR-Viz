@@ -258,6 +258,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
                 citations = None
         else:
             print("Error:", response.status_code)
+
         try:
             with open(file_path, 'r', encoding='utf-8') as xml_file:
                 data_json_get_document = {}
@@ -273,10 +274,8 @@ def insert_json_db(data_path_json,data_path_xml,db):
 
             # Find the measure with commodity="totalSearchResults"
             measure_elem = tree.find(".//tei:profileDesc/tei:creation/tei:measure[@commodity='totalSearchResults']", ns)
-            print(measure_elem)
             if measure_elem is not None:
                 quantity = measure_elem.get("quantity")
-                print(quantity)
                 if quantity == 0:
                     print(f"The xml returned is empty for {file_name}")
                     continue
@@ -338,11 +337,8 @@ def insert_json_db(data_path_json,data_path_xml,db):
                    file_name = file_name[:-3] + "_" + file_name[-2:]
             if f"{file_name}.json" in data_json_files:
                 with open(json_path, 'r') as json_file:
-                    print(json_path)
-                    print("yo", json_file)
                     data_json = json.load(json_file)
                     data_json_get_mentions = data_json.get("mentions")
-                    print(data_json_get_mentions)
                     # Remove duplicates
                     for elm in duplicates_JSON(data_json_get_mentions):
                         data_json_get_mentions.remove(elm)

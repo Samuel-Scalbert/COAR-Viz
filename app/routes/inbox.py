@@ -217,7 +217,7 @@ def insert_json():
             final_log["status"] = "success"
             final_log["db_status"] = "inserted"
             final_log["step"] = "Completed"
-            print(final_log)
+            print("🟩",final_log, "\n")
             return jsonify(final_log), 201
 
         else:
