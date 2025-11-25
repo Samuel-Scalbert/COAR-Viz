@@ -75,8 +75,7 @@ def test_delete_document_and_edges(db, doc_id, collection_name):
             "type": "document",
             "collection": collection_name,
             "id": doc_id,
-            "action": "would_delete",
-            "data": doc  # include full doc content
+            "action": "would_delete"
         })
     except KeyError:
         log.append({
