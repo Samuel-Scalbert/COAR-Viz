@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
 
                         // Sort institutions alphabetically by their name
+                        data_insti = data_insti.filter(insti => insti.name);
                         data_insti.sort((a, b) => a.name.localeCompare(b.name));
 
                         // Generate HTML for each institution
