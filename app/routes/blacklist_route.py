@@ -76,7 +76,6 @@ def update_db_blacklist():
             '''
     list_software_documents = db.AQLQuery(query, rawResults=True)
     for software_document in list_software_documents:
-        print(software_document)
         if software_document[1] in blacklist:
             software_id = software_document[0]
             print(software_document, software_id)
