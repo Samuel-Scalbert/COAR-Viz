@@ -71,18 +71,22 @@ def update_db_blacklist():
             if row:  # skip empty rows
                 blacklist.append(row[0])
 
+    deleted_mention_list = []
+
     query = f'''
             FOR soft IN softwares return [soft._id,soft.software_name.normalizedForm]
             '''
+
     list_software_documents = db.AQLQuery(query, rawResults=True)
     for software_document in list_software_documents:
         if software_document[1] in blacklist:
             software_id = software_document[0]
-            print(software_document, software_id)
-            print('yo')
+            software_name = software_document[1]
+            deleted_mention = {"id": software_id, "software": software_name}
+            deleted_mention_list.append(deleted_mention)
             #delete_document_and_edges(db, software_id, "softwares")
 
-    return jsonify({"message": "Database blacklist updated"})
+    return jsonify({"message": "Database blacklist updated", "deleted_mention": deleted_mention_list})
 
 
 @app.route('/blacklist')
