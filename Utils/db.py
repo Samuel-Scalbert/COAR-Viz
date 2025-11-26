@@ -28,7 +28,8 @@ def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_f
     while fixes < max_fixes:
         try:
             tree = ET.ElementTree(ET.fromstring(content))
-            return tree  # SUCCESS
+            log.write(f"File cleaned and send to processing: {file_path}\n")
+            return  # SUCCESS
 
         except ET.ParseError as e:
             # Extract position information
@@ -54,6 +55,7 @@ def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_f
 
             # Only try to fix < or >
             if bad_char not in ['<', '>']:
+                print(bad_char)
                 break
 
             # Determine if < or > is inside text, not a tag
