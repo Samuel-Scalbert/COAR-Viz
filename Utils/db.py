@@ -5,9 +5,8 @@ from Utils.TEI_to_JSON import transformer_TEI_JSON
 import requests
 from datetime import date
 import csv
-import re
 import xml.etree.ElementTree as ET
-
+import re
 
 def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_fixes=20):
     """
@@ -28,12 +27,16 @@ def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_f
     while fixes < max_fixes:
         try:
             tree = ET.ElementTree(ET.fromstring(content))
-            log.write(f"File cleaned and send to processing: {file_path}\n")
-            return  # SUCCESS
+            # SUCCESS → log and return
+            with open(log_file, 'a', encoding='utf-8') as log:
+                log.write(f"File cleaned and sent to processing: {file_path}\n")
+            return tree
 
         except ET.ParseError as e:
-            # Extract position information
+            # If position info is missing → cannot fix
             if not hasattr(e, 'position'):
+                with open(log_file, 'a', encoding='utf-8') as log:
+                    log.write(f"Unrecoverable XML parsing error: {e}\n")
                 break
 
             line, col = e.position
@@ -55,21 +58,20 @@ def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_f
 
             # Only try to fix < or >
             if bad_char not in ['<', '>']:
-                print(bad_char)
+                with open(log_file, 'a', encoding='utf-8') as log:
+                    log.write(f"Character '{bad_char}' cannot be auto-fixed.\n")
                 break
 
-            # Determine if < or > is inside text, not a tag
-            # Heuristic: we are inside text if not inside <...>
+            # Check if the < or > is inside a tag → cannot fix
             before = content[:abs_pos]
             inside_tag = before.rfind("<") > before.rfind(">")
 
             if inside_tag:
-                # It's part of XML markup → cannot automatically fix safely
                 with open(log_file, 'a', encoding='utf-8') as log:
                     log.write("Character appears inside a tag → cannot auto-fix.\n")
                 break
 
-            # Fix and escape the character
+            # Escape the character
             replacement = "&lt;" if bad_char == '<' else "&gt;"
             content = content[:abs_pos] + replacement + content[abs_pos + 1:]
             fixes += 1
@@ -77,9 +79,9 @@ def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_f
             with open(log_file, 'a', encoding='utf-8') as log:
                 log.write(f"Auto-fixed {bad_char} → {replacement} and retrying parse.\n")
 
-    # If here, parsing failed after fixes
+    # Failed after all fixes
     with open(log_file, 'a', encoding='utf-8') as log:
-        log.write("Max auto-fixes reached or unrecoverable error.\n")
+        log.write(f"Max auto-fixes reached or unrecoverable error for file: {file_path}\n")
 
     return None
 
@@ -331,10 +333,17 @@ def insert_json_db(data_path_json,data_path_xml,db):
             citations = None
 
     try:
-        tree = parse_xml_safely(data_path_xml)  # pass the file path, not the file object
+        # Try normal parser first
+        tree = ET.parse(data_path_xml)
+        return tree  # SUCCESS
+    except ET.ParseError:
+        # If normal parse fails, try safe parser
+        tree = parse_xml_safely(data_path_xml)
         if tree is None:
             return ['XML Parsing', f'Cleaning failed for the XML file: {data_path_xml}']
+        return tree
     except Exception as e:
+        # Unexpected errors
         return ['XML Parsing', f'Unexpected error: {e} {data_path_xml}']
 
     data_json_get_document = {}
