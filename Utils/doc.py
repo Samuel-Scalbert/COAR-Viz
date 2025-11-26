@@ -19,9 +19,7 @@ def doc_software(file_id,software,db):
         abstract = (file_meta[0]['abstract'])
     except KeyError:
         abstract = 'No abstract'
-    print(abstract)
     max_attribute = None
-    print(file_meta_id)
     query = f"""
            LET doc = DOCUMENT('{file_meta_id}')
            FOR edge IN edge_doc_to_software
@@ -123,7 +121,6 @@ def doc_info_from_id(file_id,db):
         abstract = (file_meta[0]['abstract'])
     except KeyError:
         abstract = 'No abstract'
-    print(file_meta)
     try :
         urls = file_meta[0]['urls_verified_SH']
     except KeyError:

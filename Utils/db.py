@@ -331,7 +331,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
     try:
         tree = parse_xml_safely(data_path_xml)  # pass the file path, not the file object
         if tree is None:
-            return ['XML Parsing', f'Error parsing XML file: {data_path_xml}']
+            return ['XML Parsing', f'Cleaning failed for the XML file: {data_path_xml}']
     except Exception as e:
         return ['XML Parsing', f'Unexpected error: {e} {data_path_xml}']
 
