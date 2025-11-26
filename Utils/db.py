@@ -8,58 +8,82 @@ import xml.etree.ElementTree as ET
 import re
 import csv
 
-def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log"):
+import re
+import xml.etree.ElementTree as ET
+
+
+def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_fixes=20):
     """
-    Parses an XML file while bypassing illegal characters.
-    Logs a snippet around any invalid character if parsing fails.
-
-    Args:
-        file_path (str): Path to the XML file.
-        snippet_len (int): Number of characters before/after invalid character to log.
-        log_file (str): Path to the log file where errors will be written.
-
-    Returns:
-        ET.ElementTree: Parsed XML tree if successful.
-        None: If parsing fails.
+    Parses an XML file while repairing stray < or > characters in text content.
+    Logs fixes and retries parsing until success or max_fixes reached.
     """
-    try:
-        # Read file content
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
 
-        # Remove illegal XML 1.0 characters (control chars except valid whitespace)
-        content_clean = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F]', '', content)
+    # Remove illegal XML control characters
+    content = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F]', '', content)
 
-        # Optionally remove invalid tokens like <!PCT!>
-        content_clean = re.sub(r'<![^>]+>', '', content_clean)
+    # Remove illegal declarations like <!PCT!>
+    content = re.sub(r'<![^>]+>', '', content)
 
-        # Parse with ElementTree
-        tree = ET.ElementTree(ET.fromstring(content_clean))
-        return tree
+    fixes = 0
 
-    except ET.ParseError as e:
-        with open(log_file, 'a', encoding='utf-8') as log:
-            log.write(f"\nXML parsing error in file: {file_path}\n")
-            log.write(f"Error message: {e}\n")
+    while fixes < max_fixes:
+        try:
+            tree = ET.ElementTree(ET.fromstring(content))
+            print(tree)
+            return tree  # SUCCESS
 
-            if hasattr(e, 'position'):
-                line, col = e.position
+        except ET.ParseError as e:
+            # Extract position information
+            if not hasattr(e, 'position'):
+                break
+
+            line, col = e.position
+            lines = content.splitlines(keepends=True)
+            abs_pos = sum(len(lines[i]) for i in range(line - 1)) + (col - 1)
+
+            bad_char = content[abs_pos]
+
+            with open(log_file, 'a', encoding='utf-8') as log:
+                log.write(f"\nXML parsing error in file: {file_path}\n")
+                log.write(f"Error message: {e}\n")
                 log.write(f"Error at line {line}, column {col}\n")
 
-                # Compute absolute position
-                lines = content.splitlines(keepends=True)
-                abs_pos = sum(len(lines[i]) for i in range(line - 1)) + (col - 1)
+                snippet = content[max(0, abs_pos - snippet_len):abs_pos + snippet_len]
+                pointer = " " * (abs_pos - max(0, abs_pos - snippet_len)) + "^ <-- invalid character here"
 
-                start = max(0, abs_pos - snippet_len)
-                end = min(len(content), abs_pos + snippet_len)
+                log.write(snippet + "\n")
+                log.write(pointer + "\n")
 
-                snippet = content[start:end]
-                pointer = " " * (abs_pos - start) + "^ <-- invalid character here"
+            # Only try to fix < or >
+            if bad_char not in ['<', '>']:
+                break
 
-                log.write(f"{snippet}\n")
-                log.write(f"{pointer}\n")
+            # Determine if < or > is inside text, not a tag
+            # Heuristic: we are inside text if not inside <...>
+            before = content[:abs_pos]
+            inside_tag = before.rfind("<") > before.rfind(">")
 
-        return None
+            if inside_tag:
+                # It's part of XML markup → cannot automatically fix safely
+                with open(log_file, 'a', encoding='utf-8') as log:
+                    log.write("Character appears inside a tag → cannot auto-fix.\n")
+                break
+
+            # Fix and escape the character
+            replacement = "&lt;" if bad_char == '<' else "&gt;"
+            content = content[:abs_pos] + replacement + content[abs_pos + 1:]
+            fixes += 1
+
+            with open(log_file, 'a', encoding='utf-8') as log:
+                log.write(f"Auto-fixed {bad_char} → {replacement} and retrying parse.\n")
+
+    # If here, parsing failed after fixes
+    with open(log_file, 'a', encoding='utf-8') as log:
+        log.write("Max auto-fixes reached or unrecoverable error.\n")
+
+    return None
 
 
 def is_elasticsearch_alive(host="http://172.19.0.1", port=9200, timeout=3):
