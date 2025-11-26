@@ -4,10 +4,7 @@ from pyArango.theExceptions import AQLQueryError
 from Utils.TEI_to_JSON import transformer_TEI_JSON
 import requests
 from datetime import date
-import xml.etree.ElementTree as ET
-import re
 import csv
-
 import re
 import xml.etree.ElementTree as ET
 
@@ -31,7 +28,6 @@ def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_f
     while fixes < max_fixes:
         try:
             tree = ET.ElementTree(ET.fromstring(content))
-            print(tree)
             return tree  # SUCCESS
 
         except ET.ParseError as e:
@@ -339,293 +335,290 @@ def insert_json_db(data_path_json,data_path_xml,db):
     except Exception as e:
         return ['XML Parsing', f'Unexpected error: {e} {data_path_xml}']
 
-    with open(data_path_xml, 'r', encoding='utf-8') as xml_file:
-        data_json_get_document = {}
-        tree = ET.parse(xml_file)
-        root = tree.getroot()
-        ns = {"tei": "http://www.tei-c.org/ns/1.0", 'xml': 'http://www.w3.org/XML/1998/namespace'}
+    data_json_get_document = {}
+    ns = {"tei": "http://www.tei-c.org/ns/1.0", 'xml': 'http://www.w3.org/XML/1998/namespace'}
 
-        # Find the measure with commodity="totalSearchResults"
-        measure_elem = tree.find(".//tei:profileDesc/tei:creation/tei:measure[@commodity='totalSearchResults']", ns)
-        if measure_elem is not None:
-            quantity = measure_elem.get("quantity")
-            if quantity == 0:
-                return("XML Parsing",f"The xml returned is empty for {data_path_xml}")
+    # Find the measure with commodity="totalSearchResults"
+    measure_elem = tree.find(".//tei:profileDesc/tei:creation/tei:measure[@commodity='totalSearchResults']", ns)
+    if measure_elem is not None:
+        quantity = measure_elem.get("quantity")
+        if quantity == 0:
+            return("XML Parsing",f"The xml returned is empty for {data_path_xml}")
 
-        # DOCUMENT -----------------------------------------------------
+    # DOCUMENT -----------------------------------------------------
 
-        title = tree.find(".//tei:listBibl//tei:titleStmt//tei:title", ns)
-        title = title.text
+    title = tree.find(".//tei:listBibl//tei:titleStmt//tei:title", ns)
+    title = title.text
 
-        doc_type = tree.findall(".//tei:listBibl//tei:biblFull//tei:profileDesc//tei:textClass//tei:classCode", ns)
-        for tag in doc_type:
-            if tag.attrib.get('n') == 'COMM':
-                production_date = tree.find(".//tei:listBibl//tei:biblFull//tei:sourceDesc//tei:biblStruct//tei:monogr//tei:meeting//tei:date[@type='start']", ns)
-                if production_date is not None:
-                    data_json_get_document['date'] = production_date.text[:4]
+    doc_type = tree.findall(".//tei:listBibl//tei:biblFull//tei:profileDesc//tei:textClass//tei:classCode", ns)
+    for tag in doc_type:
+        if tag.attrib.get('n') == 'COMM':
+            production_date = tree.find(".//tei:listBibl//tei:biblFull//tei:sourceDesc//tei:biblStruct//tei:monogr//tei:meeting//tei:date[@type='start']", ns)
+            if production_date is not None:
+                data_json_get_document['date'] = production_date.text[:4]
+        else:
+            production_date = tree.find(
+                ".//tei:listBibl//tei:biblFull//tei:sourceDesc//tei:biblStruct//tei:monogr//tei:imprint//tei:date[@type='datePub']",
+                ns)
+            if production_date is not None:
+                data_json_get_document['date'] = production_date.text[:4]
             else:
                 production_date = tree.find(
-                    ".//tei:listBibl//tei:biblFull//tei:sourceDesc//tei:biblStruct//tei:monogr//tei:imprint//tei:date[@type='datePub']",
+                    ".//tei:listBibl//tei:biblFull//tei:editionStmt//tei:edition[@type='current']//tei:date[@type='whenProduced']",
                     ns)
                 if production_date is not None:
                     data_json_get_document['date'] = production_date.text[:4]
-                else:
-                    production_date = tree.find(
-                        ".//tei:listBibl//tei:biblFull//tei:editionStmt//tei:edition[@type='current']//tei:date[@type='whenProduced']",
-                        ns)
-                    if production_date is not None:
-                        data_json_get_document['date'] = production_date.text[:4]
 
 
-        abstract = tree.find(".//{http://www.tei-c.org/ns/1.0}abstract")
-        if abstract:
-            tag_text = list(abstract)[0]
-            if tag_text.tag == '{http://www.tei-c.org/ns/1.0}p':
-                abstract = "".join(tag_text.itertext())
-                data_json_get_document['abstract'] = ['HAL' , abstract]
-            if tag_text.tag == '{http://www.tei-c.org/ns/1.0}div':
-                for p_tag in list(tag_text):
-                    text = "".join(p_tag.itertext())
-                data_json_get_document['abstract'] = ['GROBID' , abstract]
+    abstract = tree.find(".//{http://www.tei-c.org/ns/1.0}abstract")
+    if abstract:
+        tag_text = list(abstract)[0]
+        if tag_text.tag == '{http://www.tei-c.org/ns/1.0}p':
+            abstract = "".join(tag_text.itertext())
+            data_json_get_document['abstract'] = ['HAL' , abstract]
+        if tag_text.tag == '{http://www.tei-c.org/ns/1.0}div':
+            for p_tag in list(tag_text):
+                text = "".join(p_tag.itertext())
+            data_json_get_document['abstract'] = ['GROBID' , abstract]
 
-        data_json_get_document['file_hal_id'] = base_name_xml
-        data_json_get_document['citation'] = citations
-        data_json_get_document['title'] = title
+    data_json_get_document['file_hal_id'] = base_name_xml
+    data_json_get_document['citation'] = citations
+    data_json_get_document['title'] = title
 
-        document_document = documents_collection.createDocument(data_json_get_document)
-        document_document.save()
+    document_document = documents_collection.createDocument(data_json_get_document)
+    document_document.save()
 
-        # SOFTWARE -----------------------------------------------------
+    # SOFTWARE -----------------------------------------------------
 
-        json_filename = os.path.basename(data_path_json)
-        base_name_json, _ = os.path.splitext(json_filename)
-        json_file_path = data_path_json
+    json_filename = os.path.basename(data_path_json)
+    base_name_json, _ = os.path.splitext(json_filename)
+    json_file_path = data_path_json
 
-        if base_name_json[-2] == "v":
-           base_name_json = base_name_json[:-3] + "_" + base_name_json[-2:]
-        with open(json_file_path, 'r') as json_file:
-            data_json = json.load(json_file)
-            data_json_get_mentions = data_json.get("mentions")
-            # Remove duplicates
-            for elm in duplicates_JSON(data_json_get_mentions):
-                data_json_get_mentions.remove(elm)
+    if base_name_json[-2] == "v":
+       base_name_json = base_name_json[:-3] + "_" + base_name_json[-2:]
+    with open(json_file_path, 'r') as json_file:
+        data_json = json.load(json_file)
+        data_json_get_mentions = data_json.get("mentions")
+        # Remove duplicates
+        for elm in duplicates_JSON(data_json_get_mentions):
+            data_json_get_mentions.remove(elm)
 
-            # Process each mention
-            for mention in data_json_get_mentions:
-                if mention['software-name']['normalizedForm'] not in blacklist:
-                    mention['software_name'] = mention.pop('software-name')
-                    mention['software_type'] = mention.pop('software-type')
-                    software_document = softwares_collection.createDocument(mention)
-                    software_document.save()
+        # Process each mention
+        for mention in data_json_get_mentions:
+            if mention['software-name']['normalizedForm'] not in blacklist:
+                mention['software_name'] = mention.pop('software-name')
+                mention['software_type'] = mention.pop('software-type')
+                software_document = softwares_collection.createDocument(mention)
+                software_document.save()
 
-                    # Create edge from document to software
-                    edge_doc_soft = doc_soft_edge.createEdge()
-                    edge_doc_soft['_from'] = document_document._id
-                    edge_doc_soft['_to'] = software_document._id
-                    edge_doc_soft.save()
-                    update_nb_mention(db)
+                # Create edge from document to software
+                edge_doc_soft = doc_soft_edge.createEdge()
+                edge_doc_soft['_from'] = document_document._id
+                edge_doc_soft['_to'] = software_document._id
+                edge_doc_soft.save()
+                update_nb_mention(db)
 
-    # REFERENCES -----------------------------------------------------
+# REFERENCES -----------------------------------------------------
 
-            # Process each reference
-            data_json_get_references = data_json.get("references")
-            for reference in data_json_get_references:
-                try:
-                    result_json,error = transformer_TEI_JSON(reference['tei'])
-                    if len(error) > 0:
-                        list_errors.append(error, reference['tei'])
-                except Exception as e:
-                    return["References processing, XML -> JSON"f"Error during the transformation from XML to JSON: {e}"]
-                if result_json:
-                    reference['json'] = result_json
-                references_document = references_collection.createDocument(reference)
-                references_document.save()
-
-                # Create edge from document to reference
-                edge_doc_ref = doc_ref_edge.createEdge()
-                edge_doc_ref['_from'] = document_document._id
-                edge_doc_ref['_to'] = references_document._id
-                edge_doc_ref.save()
-
-        # AUTHORS -----------------------------------------------------
-
-        author_list = tree.findall(".//tei:listBibl//tei:titleStmt//tei:author", ns)
-        list_author_old = []
-        for elm in author_list:
-            author = {}
-            persName = elm.find("{http://www.tei-c.org/ns/1.0}persName")
-            author['role'] = elm.attrib['role']
-            author = {}
-
-            # idhal
-            author_id = {}
-            id_halid = None
-            id_halauthorid = None
-            id_halid = elm.findall(".//tei:idno[@type='idhal']", ns)
-            if len(id_halid) > 0:
-                for id_type in id_halid:
-                    author_id[id_type.attrib['notation']] = id_type.text
-            id_halauthorid = elm.find(".//tei:idno[@type='halauthorid']", ns)
-            if id_halauthorid is not None:
-                author_id[id_halauthorid.attrib['type']] = id_halauthorid.text
-                id_final = 0
+        # Process each reference
+        data_json_get_references = data_json.get("references")
+        for reference in data_json_get_references:
             try:
-                author_final_id = author_id['numeric']
-            except KeyError:
-                author_final_id = author_id['halauthorid']
-            if author_final_id in list(dict_registered.keys()):
-                registered = True
-            else:
-                registered = False
+                result_json,error = transformer_TEI_JSON(reference['tei'])
+                if len(error) > 0:
+                    list_errors.append(error, reference['tei'])
+            except Exception as e:
+                return["References processing, XML -> JSON"f"Error during the transformation from XML to JSON: {e}"]
+            if result_json:
+                reference['json'] = result_json
+            references_document = references_collection.createDocument(reference)
+            references_document.save()
 
-            # name
-            author_name = {}
-            persName = elm.find("{http://www.tei-c.org/ns/1.0}persName")
-            for name in persName:
-                author_name[name.tag.split('}')[1]] = name.text
+            # Create edge from document to reference
+            edge_doc_ref = doc_ref_edge.createEdge()
+            edge_doc_ref['_from'] = document_document._id
+            edge_doc_ref['_to'] = references_document._id
+            edge_doc_ref.save()
 
-            # document
-            author_documents = []
-            try:
-                # Create a dictionary for each document and append it to the list
-                document_data = {
-                    'document_halid': base_name_xml,
-                    'role': elm.attrib['role']
-                }
-                author_documents.append(document_data)
-            except KeyError:
-                # Handle the case where 'role' may not be present, and append with a default 'role'
-                document_data = {
-                    'document_halid': base_name_xml,
-                    'role': elm.attrib.get('role', 'unknown')
-                }
-                author_documents.append(document_data)
+    # AUTHORS -----------------------------------------------------
 
-            if registered == False:
+    author_list = tree.findall(".//tei:listBibl//tei:titleStmt//tei:author", ns)
+    list_author_old = []
+    for elm in author_list:
+        author = {}
+        persName = elm.find("{http://www.tei-c.org/ns/1.0}persName")
+        author['role'] = elm.attrib['role']
+        author = {}
 
-                author['id'] = author_id
-                author['name'] = author_name
-                author['documents'] = author_documents
+        # idhal
+        author_id = {}
+        id_halid = None
+        id_halauthorid = None
+        id_halid = elm.findall(".//tei:idno[@type='idhal']", ns)
+        if len(id_halid) > 0:
+            for id_type in id_halid:
+                author_id[id_type.attrib['notation']] = id_type.text
+        id_halauthorid = elm.find(".//tei:idno[@type='halauthorid']", ns)
+        if id_halauthorid is not None:
+            author_id[id_halauthorid.attrib['type']] = id_halauthorid.text
+            id_final = 0
+        try:
+            author_final_id = author_id['numeric']
+        except KeyError:
+            author_final_id = author_id['halauthorid']
+        if author_final_id in list(dict_registered.keys()):
+            registered = True
+        else:
+            registered = False
 
-                document_author = authors_collection.createDocument(author)
-                document_author.save()
-                dict_registered[author_final_id] = document_author._id
-                # print(dict_registered)
-                edge_doc_auth = doc_auth_edge.createEdge()
-                edge_doc_auth['_from'] = document_document._id
-                edge_doc_auth['_to'] = document_author._id
-                edge_doc_auth.save()
-                author_document_id = document_author._id
+        # name
+        author_name = {}
+        persName = elm.find("{http://www.tei-c.org/ns/1.0}persName")
+        for name in persName:
+            author_name[name.tag.split('}')[1]] = name.text
 
-            elif registered == True:
-                author_document_id = dict_registered[author_final_id]
-                # AQL query to append to the documents and affiliation
-                aql_query = f'''
-                            FOR doc IN authors
-                                FILTER doc._id == '{author_document_id}'
-                                UPDATE doc WITH {{ 
-                                    documents: APPEND(doc.documents, {author_documents}, true), 
-                                }} IN authors
-                            '''
-                # Execute the AQL query
-                result = db.AQLQuery(aql_query, rawResults=True)
-                edge_doc_auth = doc_auth_edge.createEdge()
-                edge_doc_auth['_from'] = document_document._id
-                edge_doc_auth['_to'] = author_document_id
-                edge_doc_auth.save()
-        # STRUCT -----------------------------------------------------
+        # document
+        author_documents = []
+        try:
+            # Create a dictionary for each document and append it to the list
+            document_data = {
+                'document_halid': base_name_xml,
+                'role': elm.attrib['role']
+            }
+            author_documents.append(document_data)
+        except KeyError:
+            # Handle the case where 'role' may not be present, and append with a default 'role'
+            document_data = {
+                'document_halid': base_name_xml,
+                'role': elm.attrib.get('role', 'unknown')
+            }
+            author_documents.append(document_data)
 
-            # Main logic to collect paths for all affiliations
-            author_affiliation_paths = []
-            affiliations_list = elm.findall("{http://www.tei-c.org/ns/1.0}affiliation")
-            if len(affiliations_list) > 0:
-                for affiliation in affiliations_list:
-                    # Start with the affiliation's referenced structure
-                    current_affiliation_id = affiliation.attrib['ref'][1:]  # Strip the initial "#"
-                    ancestor_paths = find_ancestor_paths(current_affiliation_id, ns,
-                                                         tree)  # Get all full hierarchy paths
-                    author_affiliation_paths.extend(ancestor_paths)  # Add all paths to the final list
-                    # Dictionary to store document key to _id mappings
-                    document_id_map = {}
-                    for author_affiliation_path in author_affiliation_paths:
-                        list_relation_idstruct = []
-                        for index, structure in enumerate(author_affiliation_path):
-                            result = db.AQLQuery(
-                                f'FOR struc IN structures FILTER struc.id_haureal == "{structure}" RETURN struc._id',
-                                rawResults=True)
-                            if len(result) == 0:
-                                affiliated_struct = tree.find(
-                                    f".//tei:back//tei:listOrg//tei:org[@xml:id='{structure}']", ns)
-                                if affiliated_struct is not None:
-                                    affiliated_struct_name = affiliated_struct.findall('tei:orgName', ns)
-                                    if affiliated_struct_name is not None:
-                                        org = {}
-                                        org['status'] = affiliated_struct.attrib['status']
-                                        org['url_team'] = False
-                                        url_team = affiliated_struct.find(
-                                            './/{http://www.tei-c.org/ns/1.0}desc//ref[@type="url"]')
-                                        for url_team in affiliated_struct.find(
-                                                './/{http://www.tei-c.org/ns/1.0}desc'):
-                                            if url_team.attrib == {'type': 'url'}:
-                                                org['url_team'] = url_team.text
-                                        try:
-                                            list_affiliated_str = list(affiliated_struct.find(
-                                                ".//{http://www.tei-c.org/ns/1.0}listRelation"))
-                                        except TypeError:
-                                            list_affiliated_str = []
-                                        for struct in affiliated_struct_name:
-                                            if struct.attrib:
-                                                org[struct.attrib['type']] = struct.text
-                                            else:
-                                                org["name"] = struct.text
-                                        org['id_haureal'] = affiliated_struct.attrib["{http://www.w3.org/XML/1998/namespace}id"]
-                                        org['type'] = affiliated_struct.attrib['type']
-                                        document_org = structures_collection.createDocument(org)
-                                        document_org.save()
-                                        struct_id = document_org._id
-                            else:
-                                struct_id = result[0]
-                                pass
+        if registered == False:
 
-                            query = f"""
-                                        for edge in edge_doc_to_struc
-                                            filter edge._from == "{document_document._id}"
-                                            let struct = document(edge._to)
-                                            return struct._id
-                                            """
-                            list_registered_edge_struc_doc = db.AQLQuery(query, rawResults=True)
+            author['id'] = author_id
+            author['name'] = author_name
+            author['documents'] = author_documents
 
-                            if struct_id not in list_registered_edge_struc_doc:
-                                edge_doc_struc = doc_struc_edge.createEdge()
-                                edge_doc_struc['_from'] = document_document._id
-                                edge_doc_struc['_to'] = struct_id
-                                edge_doc_struc.save()
+            document_author = authors_collection.createDocument(author)
+            document_author.save()
+            dict_registered[author_final_id] = document_author._id
+            # print(dict_registered)
+            edge_doc_auth = doc_auth_edge.createEdge()
+            edge_doc_auth['_from'] = document_document._id
+            edge_doc_auth['_to'] = document_author._id
+            edge_doc_auth.save()
+            author_document_id = document_author._id
 
-                            query = f"""
-                                        for edge in edge_auth_to_struc
-                                            filter edge._from == "{author_document_id}"
-                                            let struct = document(edge._to)
-                                            return struct._id
-                                            """
-                            list_registered_edge_struc_author = db.AQLQuery(query, rawResults=True)
+        elif registered == True:
+            author_document_id = dict_registered[author_final_id]
+            # AQL query to append to the documents and affiliation
+            aql_query = f'''
+                        FOR doc IN authors
+                            FILTER doc._id == '{author_document_id}'
+                            UPDATE doc WITH {{ 
+                                documents: APPEND(doc.documents, {author_documents}, true), 
+                            }} IN authors
+                        '''
+            # Execute the AQL query
+            result = db.AQLQuery(aql_query, rawResults=True)
+            edge_doc_auth = doc_auth_edge.createEdge()
+            edge_doc_auth['_from'] = document_document._id
+            edge_doc_auth['_to'] = author_document_id
+            edge_doc_auth.save()
+    # STRUCT -----------------------------------------------------
 
-                            if struct_id not in list_registered_edge_struc_author:
-                                edge_auth_struc = auth_struc_edge.createEdge()
-                                edge_auth_struc['_from'] = author_document_id
-                                edge_auth_struc['_to'] = struct_id
-                                edge_auth_struc.save()
+        # Main logic to collect paths for all affiliations
+        author_affiliation_paths = []
+        affiliations_list = elm.findall("{http://www.tei-c.org/ns/1.0}affiliation")
+        if len(affiliations_list) > 0:
+            for affiliation in affiliations_list:
+                # Start with the affiliation's referenced structure
+                current_affiliation_id = affiliation.attrib['ref'][1:]  # Strip the initial "#"
+                ancestor_paths = find_ancestor_paths(current_affiliation_id, ns,
+                                                     tree)  # Get all full hierarchy paths
+                author_affiliation_paths.extend(ancestor_paths)  # Add all paths to the final list
+                # Dictionary to store document key to _id mappings
+                document_id_map = {}
+                for author_affiliation_path in author_affiliation_paths:
+                    list_relation_idstruct = []
+                    for index, structure in enumerate(author_affiliation_path):
+                        result = db.AQLQuery(
+                            f'FOR struc IN structures FILTER struc.id_haureal == "{structure}" RETURN struc._id',
+                            rawResults=True)
+                        if len(result) == 0:
+                            affiliated_struct = tree.find(
+                                f".//tei:back//tei:listOrg//tei:org[@xml:id='{structure}']", ns)
+                            if affiliated_struct is not None:
+                                affiliated_struct_name = affiliated_struct.findall('tei:orgName', ns)
+                                if affiliated_struct_name is not None:
+                                    org = {}
+                                    org['status'] = affiliated_struct.attrib['status']
+                                    org['url_team'] = False
+                                    url_team = affiliated_struct.find(
+                                        './/{http://www.tei-c.org/ns/1.0}desc//ref[@type="url"]')
+                                    for url_team in affiliated_struct.find(
+                                            './/{http://www.tei-c.org/ns/1.0}desc'):
+                                        if url_team.attrib == {'type': 'url'}:
+                                            org['url_team'] = url_team.text
+                                    try:
+                                        list_affiliated_str = list(affiliated_struct.find(
+                                            ".//{http://www.tei-c.org/ns/1.0}listRelation"))
+                                    except TypeError:
+                                        list_affiliated_str = []
+                                    for struct in affiliated_struct_name:
+                                        if struct.attrib:
+                                            org[struct.attrib['type']] = struct.text
+                                        else:
+                                            org["name"] = struct.text
+                                    org['id_haureal'] = affiliated_struct.attrib["{http://www.w3.org/XML/1998/namespace}id"]
+                                    org['type'] = affiliated_struct.attrib['type']
+                                    document_org = structures_collection.createDocument(org)
+                                    document_org.save()
+                                    struct_id = document_org._id
+                        else:
+                            struct_id = result[0]
+                            pass
 
-                            result = db.AQLQuery(
-                                f'FOR struc IN structures FILTER struc.id_haureal == "{structure}" RETURN struc._id',
-                                rawResults=True)
-                            if result != []:
-                                list_relation_idstruct.append(result[0])
+                        query = f"""
+                                    for edge in edge_doc_to_struc
+                                        filter edge._from == "{document_document._id}"
+                                        let struct = document(edge._to)
+                                        return struct._id
+                                        """
+                        list_registered_edge_struc_doc = db.AQLQuery(query, rawResults=True)
 
-                        list_relation_documents = list_relation_collection.createDocument({"list_relation" : list_relation_idstruct})
-                        list_relation_documents.save()
+                        if struct_id not in list_registered_edge_struc_doc:
+                            edge_doc_struc = doc_struc_edge.createEdge()
+                            edge_doc_struc['_from'] = document_document._id
+                            edge_doc_struc['_to'] = struct_id
+                            edge_doc_struc.save()
 
-                    edge_auth_rel_struc = auth_rel_struc_edge.createEdge()
-                    edge_auth_rel_struc['_from'] = author_document_id
-                    edge_auth_rel_struc['_to'] = list_relation_documents._id
-                    edge_auth_rel_struc.save()
+                        query = f"""
+                                    for edge in edge_auth_to_struc
+                                        filter edge._from == "{author_document_id}"
+                                        let struct = document(edge._to)
+                                        return struct._id
+                                        """
+                        list_registered_edge_struc_author = db.AQLQuery(query, rawResults=True)
+
+                        if struct_id not in list_registered_edge_struc_author:
+                            edge_auth_struc = auth_struc_edge.createEdge()
+                            edge_auth_struc['_from'] = author_document_id
+                            edge_auth_struc['_to'] = struct_id
+                            edge_auth_struc.save()
+
+                        result = db.AQLQuery(
+                            f'FOR struc IN structures FILTER struc.id_haureal == "{structure}" RETURN struc._id',
+                            rawResults=True)
+                        if result != []:
+                            list_relation_idstruct.append(result[0])
+
+                    list_relation_documents = list_relation_collection.createDocument({"list_relation" : list_relation_idstruct})
+                    list_relation_documents.save()
+
+                edge_auth_rel_struc = auth_rel_struc_edge.createEdge()
+                edge_auth_rel_struc['_from'] = author_document_id
+                edge_auth_rel_struc['_to'] = list_relation_documents._id
+                edge_auth_rel_struc.save()
     return ["success",""]
