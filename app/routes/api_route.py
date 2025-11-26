@@ -417,6 +417,9 @@ def rejected_count():
 
 @app.route("/api/accepted_notification/<hal_id>/<software_name>", methods=["POST"])
 def accepted_notification(hal_id, software_name):
+    if hal_id[-2] == "v":
+        hal_id = hal_id[:-2]
+    print(hal_id,hal_id[-2], hal_id[:-2],software_name)
     try:
         query = """
         FOR doc IN documents
@@ -460,6 +463,8 @@ def accepted_notification(hal_id, software_name):
 
 @app.route("/api/rejected_notification/<hal_id>/<software_name>", methods=["POST"])
 def rejected_notification(hal_id, software_name):
+    if hal_id[-2] == "v":
+        hal_id = hal_id[:-2]
     try:
         query = """
         FOR doc IN documents
