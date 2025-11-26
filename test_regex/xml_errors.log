@@ -1,0 +1,7 @@
+
+XML parsing error in file: ./test_regex.xml
+Error message: not well-formed (invalid token): line 273, column 689
+Error at line 273, column 689
+ were studied according to starting dose of rFSH: < 150 IU, 150 - 224 IU, 225 - 299 IU and ≥ 300 IU.
+                                                  ^ <-- invalid character here
+Auto-fixed < → &lt; and retrying parse.
