@@ -5,6 +5,7 @@ from flask import render_template
 @app.route('/doc/<doc_id>')
 def doc_info(doc_id):
     data = doc_info_from_id(doc_id,db)
+    print("data for test",data)
     return render_template('pages/doc.html', data=data)
 
 @app.route('/doc/<doc_id>/<software>')
