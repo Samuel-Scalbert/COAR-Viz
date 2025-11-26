@@ -335,13 +335,11 @@ def insert_json_db(data_path_json,data_path_xml,db):
     try:
         # Try normal parser first
         tree = ET.parse(data_path_xml)
-        return tree  # SUCCESS
     except ET.ParseError:
         # If normal parse fails, try safe parser
         tree = parse_xml_safely(data_path_xml)
         if tree is None:
             return ['XML Parsing', f'Cleaning failed for the XML file: {data_path_xml}']
-        return tree
     except Exception as e:
         # Unexpected errors
         return ['XML Parsing', f'Unexpected error: {e} {data_path_xml}']
