@@ -317,7 +317,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
         return ["Document's registration check",f"Document {base_name_xml} was already registered and has been removed."]
 
     if base_name_xml[-2] == "v":
-       id_for_hal_api =  base_name_xml[:-2]
+       id_for_hal_api =  base_name_xml[-2]
     else:
         id_for_hal_api = base_name_xml
 
