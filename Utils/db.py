@@ -316,10 +316,14 @@ def insert_json_db(data_path_json,data_path_xml,db):
             return ["Deletion failed for already saved document",f"Document {base_name_xml} wasn't removed."]
         return ["Document's registration check",f"Document {base_name_xml} was already registered and has been removed."]
 
+    if base_name_xml[-2] == "v":
+       id_for_hal_api =  base_name_xml[:-2]
+    else:
+        id_for_hal_api = base_name_xml
 
     url = "https://api.archives-ouvertes.fr/search/"
     params = {
-        "q": f"halId_id:{base_name_xml}",
+        "q": f"halId_id:{id_for_hal_api}",
         "rows": 10,
         "fl": "citationFull_s"
     }
