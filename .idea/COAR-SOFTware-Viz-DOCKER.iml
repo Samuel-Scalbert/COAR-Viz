@@ -4,6 +4,8 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/sandbox" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/app/static/data/json" />
+      <excludeFolder url="file://$MODULE_DIR$/app/static/data/xml" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10 (COAR-SOFTware-Viz-DOCKER)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

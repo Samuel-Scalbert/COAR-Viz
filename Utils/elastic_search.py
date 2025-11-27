@@ -1,12 +1,16 @@
+import os
 from elasticsearch import Elasticsearch
-import time
 
 def sync_to_elasticsearch(db):
 
-    es = Elasticsearch(hosts=["http://elasticsearch:9200"], request_timeout=60)
+    elastic_host = os.getenv('ELASTIC_HOST')
+    elastic_port = os.getenv('ELASTIC_PORT')
+
+    es = Elasticsearch(hosts=[f"http://{elastic_host}:{elastic_port}"], request_timeout=60)
     # SOFTWARE ---------------------------------
     collection_software = db['softwares']
     # Delete index if exists
+    print(es)
     if es.indices.exists(index="softwares"):
         es.indices.delete(index="softwares")
     # Create index with lowercase normalizer mapping
