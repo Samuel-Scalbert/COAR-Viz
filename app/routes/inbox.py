@@ -212,6 +212,7 @@ def insert_json():
     if result[0] == "success":
         update_nb_notification(db, hal_id)
         final_log["status"] = "success"
+        final_log["errors"].append(result[1])
         final_log["db_status"] = "inserted"
         final_log["step"] = "Completed"
         print("🟩",json.dumps(final_log, indent=4, ensure_ascii=False),"\n")

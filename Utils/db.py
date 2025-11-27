@@ -270,7 +270,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
         return "Elasticsearch is not alive (launch the docker)"
 
     list_errors = []
-
+    xml_safe_parser = ""
     blacklist = []
 
     with open('./app/static/data/blacklist.csv', newline='', encoding='utf-8') as csvfile:
@@ -338,6 +338,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
     except ET.ParseError:
         # If normal parse fails, try safe parser
         tree = parse_xml_safely(data_path_xml)
+        xml_safe_parser = f"Safe XML Parser used for this file {data_path_xml}"
         if tree is None:
             return ['XML Parsing', f'Cleaning failed for the XML file: {data_path_xml}']
     except Exception as e:
@@ -357,7 +358,10 @@ def insert_json_db(data_path_json,data_path_xml,db):
     # DOCUMENT -----------------------------------------------------
 
     title = tree.find(".//tei:listBibl//tei:titleStmt//tei:title", ns)
-    title = title.text
+    if not title:
+        title = ""
+    else:
+        title = title.text
 
     doc_type = tree.findall(".//tei:listBibl//tei:biblFull//tei:profileDesc//tei:textClass//tei:classCode", ns)
     for tag in doc_type:
@@ -630,4 +634,4 @@ def insert_json_db(data_path_json,data_path_xml,db):
                 edge_auth_rel_struc['_from'] = author_document_id
                 edge_auth_rel_struc['_to'] = list_relation_documents._id
                 edge_auth_rel_struc.save()
-    return ["success",""]
+    return ["success",xml_safe_parser]
