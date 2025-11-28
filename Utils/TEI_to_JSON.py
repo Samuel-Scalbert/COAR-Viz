@@ -15,7 +15,6 @@ def transformer_TEI_JSON(tei):
     dic_date = {}
     dic_page = {}
     dic_editor = {}
-    error = []
 
     for main_child in root:
         for child in main_child:
@@ -59,13 +58,10 @@ def transformer_TEI_JSON(tei):
             elif child.tag == "meeting":
                 ref_dict['meeting'] = child.text
 
-            else:
-                error.append(child)
-
         ref_dict['titles'] = list_title
         ref_dict['idno'] = list_idno
         ref_dict['authors'] = list_authors
         ref_dict['editor'] = list_editor
         ref_dict['date'] = dic_date
         ref_dict['bibscope'] = dic_biblScope
-    return [ref_dict, error]
+    return [ref_dict]
