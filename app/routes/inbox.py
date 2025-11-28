@@ -76,15 +76,10 @@ def save_json(file, folder="./app/static/data/json"):
                     "path": None,
                     "error": f"Invalid JSON file: {str(e)}"
                 }
-            file_name = getattr(file, "filename", "unnamed").replace(".software.json", "")
-
-        # If raw JSON dict
-        else:
-            data_json = file
-            file_name = data_json.get("file_hal_id", "unnamed")
-
-        file_name = file_name[:-3]
-        json_path = os.path.join(folder, f"{file_name}.json")
+            file_name = getattr(file, "filename", "unnamed")
+            if file_name.endswith(".software.json"):
+                file_name = file_name.replace(".software", "")
+        json_path = os.path.join(folder, file_name)
 
         try:
             with open(json_path, "w", encoding="utf-8") as f:
@@ -141,13 +136,15 @@ def insert_json():
 
     file = request.files["file"]
     hal_id = request.form.get("document_id")
+    if hal_id.endswith(".software"):
+        hal_id = hal_id.replace(".software", "")
     final_log["hal_id"] = hal_id
 
     # ------------------ 2. XML DOWNLOAD ------------------
     final_log["step"] = "XML download from HAL"
 
     url = "https://api.archives-ouvertes.fr/search/"
-    hal_clean = hal_id[:-2] if hal_id.endswith("v") else hal_id
+    hal_clean = hal_id[:-2] if hal_id[-2]=="v" else hal_id
 
     params = {"q": f"halId_id:{hal_clean}", "fl": "label_xml", "wt": "xml-tei"}
 
@@ -173,6 +170,8 @@ def insert_json():
             final_log["errors"].append(xml_result["error"])
             final_log["paths"]["xml"] = xml_result["path"]
             xml_path = None
+            raise Exception(xml_result["path"])
+
 
     except Exception as e:
         final_log["errors"].append(f"Exception while downloading XML: {str(e)}")
@@ -194,6 +193,8 @@ def insert_json():
             final_log["errors"].append(json_result["error"])
             final_log["paths"]["json"] = json_result["path"]
             json_path = None
+            raise Exception(json_result["path"])
+
 
     except Exception as e:
         final_log["errors"].append(f"Exception while saving JSON: {str(e)}")
@@ -210,6 +211,15 @@ def insert_json():
     result = insert_json_db(json_path, xml_path, db)
 
     if result[0] == "success":
+
+        try:
+            if os.path.exists(xml_path):
+                os.remove(xml_path)
+            if os.path.exists(json_path):
+                os.remove(json_path)
+        except Exception as e:
+            final_log['errors'].append(f"Document {hal_id} wasn't removed.")
+
         update_nb_notification(db, hal_id)
         final_log["status"] = "success"
         final_log["errors"].append(result[1])
