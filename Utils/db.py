@@ -86,24 +86,35 @@ def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_f
     return None
 
 
-def is_elasticsearch_alive(host="http://172.19.0.1", port=9200, timeout=3):
-    url = f"{host}:{port}/_cluster/health"
+def is_elasticsearch_alive(timeout=10):
+    host = os.environ.get("ELASTIC_HOST")
+    port = os.environ.get("ELASTIC_PORT")
+    # Check missing environment variables
+    if not host or not port:
+        return [False, f"Missing environment variables: ELASTIC_HOST={host}, ELASTIC_PORT={port}"]
+    url = f"http://{host}:{port}/_cluster/health"
     try:
         response = requests.get(url, timeout=timeout)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("status") in ["green", "yellow"]:
-                return True
-            else:
-                return False
+
+        # HTTP not OK
+        if response.status_code != 200:
+            return [
+                False,
+                f"Elasticsearch responded with HTTP {response.status_code} instead of 200"
+            ]
+        data = response.json()
+        status = data.get("status")
+        if status in ["green", "yellow"]:
+            return [True, f"Elasticsearch is alive (status: {status})"]
         else:
-            return False
+            return [False, f"Elasticsearch returned unhealthy status: {status}"]
     except requests.ConnectionError:
-        return False
+        return [False, f"Connection error: cannot reach Elasticsearch at {url}"]
     except requests.Timeout:
-        return False
+        return [False, f"Timeout after {timeout}s contacting Elasticsearch at {url}"]
     except Exception as e:
-        return False
+        return [False, f"Unexpected error: {e}"]
+
 
 
 def check_or_create_collection(db, collection_name, collection_type='Collection'):
@@ -266,10 +277,11 @@ def update_nb_rejected(db):
         return None
 
 def insert_json_db(data_path_json,data_path_xml,db):
-    if not is_elasticsearch_alive():
-        return "Elasticsearch is not alive (launch the docker)"
+    elastich_alive = is_elasticsearch_alive()
 
-    list_errors = []
+    if not elastich_alive[0]:
+        return ["Elasticsearch Error",elastich_alive[1]]
+
     xml_safe_parser = ""
     blacklist = []
 
@@ -303,17 +315,16 @@ def insert_json_db(data_path_json,data_path_xml,db):
 
     xml_filename = os.path.basename(data_path_xml)
     base_name_xml, _ = os.path.splitext(xml_filename)
-    json_file_path = data_path_xml  # already passed by user
 
     # if already registered, remove and exit
     if base_name_xml in files_list_registered:
         try:
             if os.path.exists(data_path_xml):
                 os.remove(data_path_xml)
-            if os.path.exists(json_file_path):
-                os.remove(json_file_path)
+            if os.path.exists(data_path_json):
+                os.remove(data_path_json)
         except Exception as e:
-            return ["Deletion failed for already saved document",f"Document {base_name_xml} wasn't removed."]
+            return ["Document's registration check",f"Document {base_name_xml} deletion failed."]
         return ["Document's registration check",f"Document {base_name_xml} was already registered and has been removed."]
 
     if base_name_xml[-2] == "v":
@@ -357,7 +368,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
     if measure_elem is not None:
         quantity = measure_elem.get("quantity")
         if quantity == 0:
-            return("XML Parsing",f"The xml returned is empty for {data_path_xml}")
+            return["XML Parsing",f"The xml returned is empty for {data_path_xml}"]
 
     # DOCUMENT -----------------------------------------------------
 
@@ -407,13 +418,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
 
     # SOFTWARE -----------------------------------------------------
 
-    json_filename = os.path.basename(data_path_json)
-    base_name_json, _ = os.path.splitext(json_filename)
-    json_file_path = data_path_json
-
-    if base_name_json[-2] == "v":
-       base_name_json = base_name_json[:-3] + "_" + base_name_json[-2:]
-    with open(json_file_path, 'r') as json_file:
+    with open(data_path_json, 'r') as json_file:
         data_json = json.load(json_file)
         data_json_get_mentions = data_json.get("mentions")
         # Remove duplicates
@@ -441,11 +446,9 @@ def insert_json_db(data_path_json,data_path_xml,db):
         data_json_get_references = data_json.get("references")
         for reference in data_json_get_references:
             try:
-                result_json,error = transformer_TEI_JSON(reference['tei'])
-                if len(error) > 0:
-                    list_errors.append(error, reference['tei'])
+                result_json = transformer_TEI_JSON(reference['tei'])
             except Exception as e:
-                return["References processing, XML -> JSON"f"Error during the transformation from XML to JSON: {e}"]
+                return["References processing, XML -> JSON",f"Error during the transformation from XML to JSON: {e}"]
             if result_json:
                 reference['json'] = result_json
             references_document = references_collection.createDocument(reference)
@@ -460,7 +463,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
     # AUTHORS -----------------------------------------------------
 
     author_list = tree.findall(".//tei:listBibl//tei:titleStmt//tei:author", ns)
-    list_author_old = []
     for elm in author_list:
         author = {}
         persName = elm.find("{http://www.tei-c.org/ns/1.0}persName")
@@ -478,7 +480,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
         id_halauthorid = elm.find(".//tei:idno[@type='halauthorid']", ns)
         if id_halauthorid is not None:
             author_id[id_halauthorid.attrib['type']] = id_halauthorid.text
-            id_final = 0
         try:
             author_final_id = author_id['numeric']
         except KeyError:
@@ -538,7 +539,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
                             }} IN authors
                         '''
             # Execute the AQL query
-            result = db.AQLQuery(aql_query, rawResults=True)
+            db.AQLQuery(aql_query, rawResults=True)
             edge_doc_auth = doc_auth_edge.createEdge()
             edge_doc_auth['_from'] = document_document._id
             edge_doc_auth['_to'] = author_document_id
@@ -556,7 +557,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
                                                      tree)  # Get all full hierarchy paths
                 author_affiliation_paths.extend(ancestor_paths)  # Add all paths to the final list
                 # Dictionary to store document key to _id mappings
-                document_id_map = {}
                 for author_affiliation_path in author_affiliation_paths:
                     list_relation_idstruct = []
                     for index, structure in enumerate(author_affiliation_path):
