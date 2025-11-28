@@ -337,6 +337,7 @@ def insert_json_db(data_path_json,data_path_xml,db):
         "fl": "citationFull_s"
     }
 
+
     response = requests.get(url, params=params)
     if response.status_code == 200:
         data = response.json()
