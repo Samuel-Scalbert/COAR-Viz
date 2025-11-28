@@ -310,8 +310,6 @@ def insert_json_db(data_path_json,data_path_xml,db):
 
     files_list_registered = db.AQLQuery('FOR hal_id in documents RETURN hal_id.file_hal_id', rawResults=True, batchSize=2000)
     dict_registered = {}
-    dict_edge_author = {}
-    new_file = False
 
     xml_filename = os.path.basename(data_path_xml)
     base_name_xml, _ = os.path.splitext(xml_filename)
