@@ -1,6 +1,5 @@
 from Utils.db import update_nb_rejected, update_nb_accepted
 from app.app import app, db
-from Utils.disambiguate import desambiguate_from_software
 from Utils.author import author_info_from_id
 from flask import jsonify, Response
 from datetime import date, timedelta
@@ -18,20 +17,6 @@ def stream_cursor(cursor):
             first = False
         yield ']'
     return Response(generate(), mimetype='application/json')
-
-@app.route('/api/disambiguate/list_software')
-def list_software():
-    query = f'''
-            for software in softwares
-            return distinct software.software_name.normalizedForm
-            '''
-    response = db.AQLQuery(query, rawResults=True, batchSize=2000)
-    return list(response)
-
-@app.route('/api/disambiguate/<software>')
-def disambiguate_software(software):
-    response = desambiguate_from_software(software)
-    return response
 
 # API endpoint to retrieve line chart data for software mentions over the years
 @app.route('/api/line_chart')
@@ -417,7 +402,6 @@ def rejected_count():
 
 @app.route("/api/accepted_notification/<hal_id>/<software_name>", methods=["POST"])
 def accepted_notification(hal_id, software_name):
-    print(hal_id,hal_id[-2], hal_id[:-2],software_name)
     try:
         query = """
         FOR doc IN documents

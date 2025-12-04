@@ -1,25 +1,27 @@
-from app.app import app
+from app.app import app, db
 from flask import render_template, request, jsonify
-from Utils.disambiguate import api_list_software
+from Utils.disambiguate import disambiguate_from_software, fetch_for_software
 
 
 @app.route('/disambiguate')
 def disambiguate():
     return render_template('pages/disambiguate.html')
 
+@app.route('/api/disambiguate/list_software_search')
+def list_software():
+    query = f'''
+            for software in softwares
+            return distinct software.software_name.rawForm
+            '''
+    response = db.AQLQuery(query, rawResults=True, batchSize=2000)
+    return list(response)
 
-@app.route('/receive_list', methods=['POST'])
-def receive_list():
-    data = request.get_json()  # Get JSON data
-    if not data:
-        return jsonify({'error': 'No data provided'}), 400
+@app.route('/api/disambiguate/list_dup_software/<softwareName>')
+def retrieve(softwareName):
+    result = disambiguate_from_software(softwareName)
+    return jsonify({'result': result})
 
-    received_list = data.get('list')
-    if not received_list:
-        return jsonify({'error': 'No list provided'}), 400
-
-    # Process the list here
-    dict_context = api_list_software(received_list)  # For demonstration, print the list
-
-    #return jsonify({'message': 'List received successfully', 'received_dict': dict_context})
-    return dict_context
+@app.route('/api/disambiguate/fetch_data/<softwareName>/<docid>')
+def fetch_data(softwareName, docid):
+    result = fetch_for_software(softwareName,docid)
+    return jsonify(result)
