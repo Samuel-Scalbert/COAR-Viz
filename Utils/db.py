@@ -371,11 +371,12 @@ def insert_json_db(data_path_json,data_path_xml,db):
 
     # DOCUMENT -----------------------------------------------------
 
-    title = tree.find(".//tei:listBibl//tei:titleStmt//tei:title", ns)
-    if not title:
-        title = ""
+    title_elem = tree.find(".//tei:listBibl//tei:titleStmt//tei:title", ns)
+
+    if title_elem is not None and title_elem.text:
+        title = title_elem.text
     else:
-        title = title.text
+        title = ""  # no text found
 
     doc_type = tree.findall(".//tei:listBibl//tei:biblFull//tei:profileDesc//tei:textClass//tei:classCode", ns)
     for tag in doc_type:
