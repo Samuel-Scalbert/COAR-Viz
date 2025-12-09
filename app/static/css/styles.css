@@ -629,6 +629,149 @@ main .analyse{ /* Style Grid du block Main */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+input#input-box-dis{
+    width: -webkit-fill-available;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #fafafa;
+    padding-left: 10px;
+    border: 1px solid var(--effet-color);
+}
+
+.disambiguate #result-box-dis{
+    display: block;
+    background-color: #fafafa;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+
+/* Put search on the left and sliders on the right */
+.search-with-sliders {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* Left side: search box + results */
+.search-left {
+  flex: 1;
+}
+
+/* Right side: slider controls */
+.sliders-right {
+  width: 500px;
+  background: #fff;
+  height: -webkit-fill-available;
+  border: 1px solid var(--effet-color);
+  padding: 12px 15px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.slider-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slider-block label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.slider-value {
+  font-size: 0.9rem;
+  color: #222;
+  font-weight: bold;
+  text-align: right;
+}
+
+/* Improved slider look */
+.slider {
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #007bff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #007bff;
+  cursor: pointer;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    text-align: end;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 280px;
+    background-color: #f9f9f9;
+    color: #333;
+    text-align: left;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    position: absolute;
+    z-index: 10;
+    top: 125%; /* position below the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip .icon {
+    font-size: 18px;
+}
+
+.tooltip ul{
+    list-style: none;
+}
+
+.tooltip h3{
+    align-content: center;
+    font-size: 15px;
+    font-weight: bold;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
 /* Document card styling */
 .doc-card {
   border: 1px solid #e0e0e0;
@@ -725,24 +868,6 @@ main .analyse{ /* Style Grid du block Main */
   padding: 10px 16px;
   cursor: pointer;
   transition: background 0.2s ease;
-}
-
-/* Scrollbar styling for dropdown */
-.dropdown-content-search::-webkit-scrollbar {
-  width: 8px;
-}
-
-.dropdown-content-search::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.dropdown-content-search::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-.dropdown-content-search::-webkit-scrollbar-thumb:hover {
-  background: #555;
 }
 
 .comparison-box {

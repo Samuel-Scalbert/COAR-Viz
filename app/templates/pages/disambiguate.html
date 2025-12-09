@@ -1,14 +1,64 @@
 {% extends "partials/conteneur.html" %}
 {% block body %}
-<div>
-    <div class="search-software">
-        <div class="dropdown" id="search-box-dis">
-            <input type="text" id="input-box-dis" placeholder="Search..." autocomplete="off">
-        </div>
-        <div id="result-box-dis"></div>
-    </div>
-<div id="card-box-disambiguate"></div>
 
+<div class="disambiguate">
+    <div class="search-software search-with-sliders">
+
+        <!-- LEFT SIDE : SEARCH BAR + RESULTS -->
+        <div class="search-left">
+            <div class="dropdown" id="search-box-dis">
+                <input type="text" id="input-box-dis" placeholder="Search..." autocomplete="off">
+            </div>
+
+            <div id="result-box-dis" style="display:block;">
+                <div class="dropdown-content-search">
+                    <!-- results here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE : SLIDERS -->
+        <div class="sliders-right">
+            <div class="tooltip">
+                <span class="icon"><span class="material-symbols-outlined">help</span></span>
+                <div class="tooltip-text">
+                    <h3>Software Name Similarity Ratios</h3>
+                    <ul>
+                        <li><strong>Normal Ratio:</strong> Measures overall character similarity between two software names, considering exact character matches.</li>
+                        <li><strong>Token Ratio:</strong> Compares words in any order, ignoring their positions. Useful for names with rearranged words.</li>
+                        <li><strong>Partial Ratio:</strong> Checks if one name appears as a substring of the other. Detects partial overlaps.</li>
+                    </ul>
+                    <h3>Examples</h3>
+                    <ul>
+                        <li><strong>AlphaSoft</strong> vs <strong>Soft Alpha</strong>: Normal ≈ 67%, Token ≈ 100%, Partial ≈ 80%</li>
+                        <li><strong>DataAnalyzer Pro</strong> vs <strong>Analyzer Pro</strong>: Normal ≈ 88%, Token ≈ 100%, Partial ≈ 100%</li>
+                        <li><strong>QuickEdit</strong> vs <strong>QuickEditor</strong>: Normal ≈ 91%, Token ≈ 91%, Partial ≈ 100%</li>
+                    </ul>
+                    <p><h3>Notes:</h3> Setting a slider to 0 ignores that ratio. Adjusting sliders updates the comparison results in real time.</p>
+                </div>
+            </div>
+            <div class="slider-block">
+                <label for="fuzz_ratio">Normal Ratio</label>
+                <input type="range" min="0" max="100" value="70" class="slider" id="fuzz_ratio">
+                <span class="slider-value" id="fuzz_average">70</span>
+            </div>
+            <div class="slider-block">
+                <label for="average_ratio">Token Ratio</label>
+                <input type="range" min="0" max="100" value="80" class="slider" id="average_ratio">
+                <span class="slider-value" id="value_average">80</span>
+            </div>
+
+            <div class="slider-block">
+                <label for="partial_ratio">Partial Ratio</label>
+                <input type="range" min="0" max="100" value="90" class="slider" id="partial_ratio">
+                <span class="slider-value" id="value_partial">90</span>
+            </div>
+        </div>
+
+    </div>
+    <!-- RESULTS BELOW SEARCH -->
+    <div id="card-box-disambiguate">
+</div>
 </div>
 {% endblock %}
 

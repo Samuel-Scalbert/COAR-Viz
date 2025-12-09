@@ -16,6 +16,16 @@ const inputBox = document.getElementById("input-box-dis");
 const cardContainer = document.getElementById("card-box-disambiguate");
 
 
+// Sliders
+const sliders = {
+    range1: document.getElementById("fuzz_ratio"),
+    range2: document.getElementById("average_ratio"),
+    range3: document.getElementById("partial_ratio"),
+    val1: document.getElementById("fuzz_average"),
+    val2: document.getElementById("value_average"),
+    val3: document.getElementById("value_partial")
+};
+
 /*****************************************
  *  API HELPERS
  *****************************************/
@@ -42,7 +52,6 @@ async function fetchSoftwareJSON(name, docid) {
     }
 }
 
-
 /*****************************************
  *  SET ORIGINAL SOFTWARE
  *****************************************/
@@ -54,7 +63,6 @@ async function setOriginalSoftware(name, docid) {
         json: Array.isArray(data) ? data : [data]
     };
 }
-
 
 /*****************************************
  *  RENDER HELPERS
@@ -156,8 +164,19 @@ function diffSoftwareNames(ogName, swName) {
     };
 }
 
+// Make fetch_ratio async and return the result
+async function fetchRatio(target, candidate) {
+    try {
+        const result = await apiGET(`/api/disambiguate/fetch_ratio/${target}/${candidate}`);
+        return result;
+    } catch (err) {
+        console.error("Error fetching ratio:", err);
+        return null;
+    }
+}
 
-function renderComparison(ogJson, ogName, swJson, swName) {
+async function renderComparison(ogJson, ogName, swJson, swName) {
+
     const og = ogJson[0];
     const sw = swJson[0];
 
@@ -194,6 +213,15 @@ function renderComparison(ogJson, ogName, swJson, swName) {
     // Name diff
     const nameDiff = diffSoftwareNames(ogName, swName);
 
+    const docIDcompare = og.document.file_hal_id === sw.document.file_hal_id
+        ? `<div class="comparison-row">
+                <span class="label">Same Document ID:</span>
+                <span class="value" style="color: #0a8a0a"> True </span>
+           </div>`
+        : `<div class="comparison-row">
+                <span class="label">Same Document ID:</span>
+                <span class="value" style="color: #b30000"> False </span>
+           </div>`;
 
     const pctColor = pct =>
         pct >= 50 ? "comparison-good" :
@@ -206,6 +234,39 @@ function renderComparison(ogJson, ogName, swJson, swName) {
             ? `<li class="empty">None</li>`
             : ids.map(id => `<li>${dict[id] || id}</li>`).join("");
 
+    // Call the API and wait for the JSON result
+    const result = await fetchRatio(ogName, swName);
+
+    // Transform all values to numbers
+    const ratioJson = Object.fromEntries(
+        Object.entries(result).map(([key, value]) => [key, Math.round(parseFloat(value))])
+    );
+
+        // Only show div if the corresponding slider is greater than 0
+    const normalDiv = sliders.range1.value > 0
+        ? `<div class="comparison-row">
+                <span class="label">Normal Ratio:</span>
+                <span class="value">${ratioJson.normal_ratio}</span>
+           </div>`
+        : '';
+
+    const tokenDiv = sliders.range2.value > 0
+        ? `<div class="comparison-row">
+                <span class="label">Token Ratio:</span>
+                <span class="value">${ratioJson.token_ratio}</span>
+           </div>`
+        : '';
+
+    const partialDiv = sliders.range3.value > 0
+        ? `<div class="comparison-row">
+                <span class="label">Partial Ratio:</span>
+                <span class="value">${ratioJson.partial_ratio}</span>
+           </div>`
+        : '';
+
+    const ratioHTML = `${normalDiv}${tokenDiv}${partialDiv}`;
+    // Now you can access ratioJson.normal_ratio, ratioJson.token_ratio, etc.
+
 
     // -----------------------------------------
     // HTML OUTPUT
@@ -217,6 +278,9 @@ function renderComparison(ogJson, ogName, swJson, swName) {
 
             <h3>Similarity Score</h3>
             <h3>Software Name Difference</h3>
+            
+            ${docIDcompare}
+            
             <div class="comparison-row">
                 <span class="label">Original:</span>
                 <span class="value">${nameDiff.og}</span>
@@ -225,7 +289,9 @@ function renderComparison(ogJson, ogName, swJson, swName) {
                 <span class="label">Related:</span>
                 <span class="value">${nameDiff.sw}</span>
             </div>
-
+            
+            ${ratioHTML}
+            
             <div class="comparison-row">
                 <span class="label">Authors in common:</span>
                 <span class="value ${pctColor(authorPct)}">
@@ -268,9 +334,6 @@ function renderComparison(ogJson, ogName, swJson, swName) {
         </div>
     `;
 }
-
-
-
 
 /*****************************************
  *  CARD RENDERING
@@ -327,7 +390,7 @@ async function renderComparisonCards() {
 
         relatedDiv.innerHTML = renderJSON([swJSON], sw, docid)
 
-        resultDiv.innerHTML = renderComparison(og.json, og.name, [swJSON], sw);
+        resultDiv.innerHTML = await renderComparison(og.json, og.name, [swJSON], sw);
         // resultDiv.innerHTML = renderComparison(og.docid, docid);
 
         // ----------------------------------
@@ -347,17 +410,24 @@ async function renderComparisonCards() {
     }
 }
 
-
 /*****************************************
  *  MAIN ENTRYPOINT WHEN USER SELECTS SOFTWARE
  *****************************************/
 async function softwareClickHandler(softwareName) {
     try {
-        const data = await apiGET(`/software/api/disambiguate/list_dup_software/${softwareName}`);
+        const fuzz = sliders.range1.value;
+        const avg = sliders.range2.value;
+        const partial = sliders.range3.value;
+        const data = await apiGET(`/software/api/disambiguate/list_dup_software/${softwareName}/${fuzz}/${avg}/${partial}`);
         state.currentList = data.result || [];
 
         if (state.currentList.length === 0) {
-            console.warn("No related software found.");
+            console.log("No related software found.");
+            return;
+        }
+
+        if (state.currentList.length === 1) {
+            cardContainer.innerHTML = `<div class="result-software"><p>No mention for this software can be disambiguated.</p></div>`
             return;
         }
 
@@ -376,7 +446,6 @@ async function softwareClickHandler(softwareName) {
         console.error("Error in main handler:", err);
     }
 }
-
 
 /*****************************************
  *  SEARCH LOGIC
@@ -402,6 +471,46 @@ function search() {
     resultBox.innerHTML = `<div class="dropdown-content-search">${content}</div>`;
 }
 
+/*****************************************
+ *  SLIDER LOGIC
+ *****************************************/
+function initSliders() {
+    // Set initial displayed values
+    sliders.val1.textContent = sliders.range1.value;
+    sliders.val2.textContent = sliders.range2.value;
+    sliders.val3.textContent = sliders.range3.value;
+
+    // Update on input
+    sliders.range1.oninput = () => {
+        sliders.val1.textContent = sliders.range1.value;
+        onSliderChange();
+    };
+
+    sliders.range2.oninput = () => {
+        sliders.val2.textContent = sliders.range2.value;
+        onSliderChange();
+    };
+    sliders.range3.oninput = () => {
+        sliders.val3.textContent = sliders.range3.value;
+        onSliderChange();
+    };
+}
+
+/**
+ * Called whenever any slider value changes.
+ * You can trigger filtering, scoring, API calls, etc.
+ */
+let sliderTimeout = null;
+
+function onSliderChange() {
+    const softwareName = state.og.name;
+    if (!softwareName) return;
+
+    clearTimeout(sliderTimeout);
+    sliderTimeout = setTimeout(() => {
+        softwareClickHandler(softwareName);
+    }, 300);
+}
 
 /*****************************************
  *  EVENT BINDINGS
@@ -418,4 +527,10 @@ resultBox.addEventListener("click", function (event) {
 
 inputBox.addEventListener("keyup", search);
 
-document.addEventListener("DOMContentLoaded", fetchSoftwareList);
+document.addEventListener("DOMContentLoaded", () => {
+    fetchSoftwareList();
+    initSliders();
+});
+
+
+

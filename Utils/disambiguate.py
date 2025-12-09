@@ -1,38 +1,55 @@
 from app.app import db
 from rapidfuzz import fuzz
-from flask import url_for
 
+def disambiguate_from_software(software, fuzz_threshold:float,avg_threshold:float, partial_threshold:float):
+    # Ensure thresholds are floats
+    fuzz_threshold = float(fuzz_threshold)
+    avg_threshold = float(avg_threshold)
+    partial_threshold = float(partial_threshold)
 
-def disambiguate_from_software(software):
-    query = f'''
-                for software in softwares
-                return distinct software.software_name.rawForm
-                '''
+    # 1️⃣ Get all software names
+    query = '''
+        FOR s IN softwares
+            RETURN DISTINCT s.software_name.rawForm
+    '''
     list_software = list(db.AQLQuery(query, rawResults=True, batchSize=2000))
+
+    list_possible_dup = [software]  # use a set (no duplicates)
+
+    # 2️⃣ Compare against every software in database
+    for existing in list_software:
+        if existing == software:
+            continue
+        normal_ratio = fuzz.ratio(software, existing)
+        token_ratio = fuzz.token_sort_ratio(software, existing)
+        partial_ratio_val = fuzz.partial_ratio(software, existing)
+
+        if fuzz_threshold and normal_ratio >= fuzz_threshold:
+            list_possible_dup.append(existing)
+
+        if avg_threshold and token_ratio >= avg_threshold:
+            list_possible_dup.append(existing)
+
+        if partial_threshold and partial_ratio_val >= partial_threshold:
+            list_possible_dup.append(existing)
+
+    # 3️⃣ Fetch docids for every candidate software
     list_possible_dup_docid = []
-    list_possible_dup = [software]
-    for software_available in list_software:
-        ratio = fuzz.ratio(software_available, software)
-        if software != software_available and ratio > 50:
-            token_ratio = fuzz.token_sort_ratio(software, software_available)
-            partial_ratio = fuzz.partial_ratio(software_available, software)
-            average_ratio = (token_ratio+partial_ratio+ratio)/3
-            if average_ratio > 80:
-                list_possible_dup.append(software_available)
-            if partial_ratio >= 100:
-                list_possible_dup.append(software_available)
-    for software in list_possible_dup:
+    for sw in list_possible_dup:
         query = f'''
-                    for software in softwares
-                        filter software.software_name.rawForm == '{software}'
-                        for edge in edge_doc_to_software
-                            filter edge._to == software._id
-                            let doc = document(edge._from)
-                            return distinct doc._key
-                    '''
-        result_software = list(db.AQLQuery(query, rawResults=True, batchSize=2000))
-        for result_docid in result_software:
-            list_possible_dup_docid.append([software, result_docid])
+            FOR s IN softwares
+                FILTER s.software_name.rawForm == "{sw}"
+                FOR e IN edge_doc_to_software
+                    FILTER e._to == s._id
+                    LET doc = DOCUMENT(e._from)
+                    RETURN DISTINCT doc._key
+        '''
+
+        result_docids = list(db.AQLQuery(query, rawResults=True, batchSize=2000))
+
+        for docid in result_docids:
+            list_possible_dup_docid.append([sw, docid])
+
     return list_possible_dup_docid
 
 def fetch_for_software(softwareName, docid):
