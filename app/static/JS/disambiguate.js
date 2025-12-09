@@ -167,7 +167,7 @@ function diffSoftwareNames(ogName, swName) {
 // Make fetch_ratio async and return the result
 async function fetchRatio(target, candidate) {
     try {
-        const result = await apiGET(`/api/disambiguate/fetch_ratio/${target}/${candidate}`);
+        const result = await apiGET(`/software/api/disambiguate/fetch_ratio/${target}/${candidate}`);
         return result;
     } catch (err) {
         console.error("Error fetching ratio:", err);
