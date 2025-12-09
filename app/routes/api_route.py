@@ -18,6 +18,15 @@ def stream_cursor(cursor):
         yield ']'
     return Response(generate(), mimetype='application/json')
 
+@app.route('/api/disambiguate/list_software')
+def list_software_for_software_page():
+    query = f'''
+            for software in softwares
+            return distinct software.software_name.normalizedForm
+            '''
+    response = db.AQLQuery(query, rawResults=True, batchSize=2000)
+    return list(response)
+
 # API endpoint to retrieve line chart data for software mentions over the years
 @app.route('/api/line_chart')
 def line_chart_data():
