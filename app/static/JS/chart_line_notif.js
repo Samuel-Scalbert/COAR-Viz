@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     createChart(
         "/software/api/notification_count",
         "lineChartNotif",
-        "Notifications received (last 30 days)",
+        "Documents received (last 30 days)",
         "Number of Notifications",
         "rgba(255, 159, 64, 1)",   // line color (orange)
         "rgba(255, 205, 86, 1)"    // point color (yellow)
