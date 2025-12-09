@@ -1272,7 +1272,6 @@ input#input-box-dis{
 
 .doc_stat h1{
     background-size: 50px;
-    position: sticky;
     top: 0;
     width: auto;
     z-index: 1;
