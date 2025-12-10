@@ -2,7 +2,6 @@ from flask import Flask, render_template
 from pyArango.connection import Connection
 from Utils.home import home_data
 import os
-from Utils.elastic_search import sync_to_elasticsearch
 
 app = Flask(__name__,template_folder='templates',static_folder='static')
 
@@ -41,7 +40,7 @@ global data_dashboard
 data_dashboard = None
 #data_dashboard = dashboard(db, structure)
 
-from app.routes import doc_route, dashboard_route,blacklist_route, software_route, api_route, disambiguate_route, author_route, search_route, inbox, elastic_route
+from app.routes import doc_route, dashboard_route,blacklist_route, software_route, api_route, disambiguate_route, author_route, search_route, inbox
 
 @app.route('/')
 def home():
