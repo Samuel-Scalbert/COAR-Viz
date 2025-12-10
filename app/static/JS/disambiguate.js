@@ -189,6 +189,9 @@ async function renderComparison(ogJson, ogName, swJson, swName) {
     const ogStruct = og.structures?.map(s => s.id_haureal) || [];
     const swStruct = sw.structures?.map(s => s.id_haureal) || [];
 
+    const ogSoftware = og.software?.map(s => s.context) || [];
+    const swSoftware = sw.software?.map(s => s.context) || [];
+
     const ogAuthorsById = Object.fromEntries(og.authors.map(a => [a.halAuthorId, a.name]));
     const swAuthorsById = Object.fromEntries(sw.authors.map(a => [a.halAuthorId, a.name]));
 
@@ -222,6 +225,30 @@ async function renderComparison(ogJson, ogName, swJson, swName) {
                 <span class="label">Same Document ID:</span>
                 <span class="value" style="color: #b30000"> False </span>
            </div>`;
+
+    let crossContextSummary = "";
+
+    if (ogName !== swName){
+
+    const normalize = s => s.toLowerCase().replace(/\s+/g, " ").trim();
+
+    // Check where OG software name appears in SW context
+    const ogContextFoundInSW = [];
+    swSoftware.forEach(swCtx => {
+        if (normalize(swCtx).includes(normalize(ogName))) {
+            ogContextFoundInSW.push(swCtx);
+        }
+    });
+
+     crossContextSummary = `
+            <div class="comparison-row">
+                <span class="label">Original software found in Related's contexts:</span>
+                <span class="value ${ogContextFoundInSW.length ? "comparison-good" : "comparison-bad"}">
+                    ${ogContextFoundInSW.length}/${swSoftware.length}
+                </span>
+            </div>
+        `;
+    }
 
     const pctColor = pct =>
         pct >= 50 ? "comparison-good" :
@@ -289,6 +316,8 @@ async function renderComparison(ogJson, ogName, swJson, swName) {
                 <span class="label">Related:</span>
                 <span class="value">${nameDiff.sw}</span>
             </div>
+            
+            ${crossContextSummary}
             
             ${ratioHTML}
             
