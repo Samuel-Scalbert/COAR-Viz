@@ -1,5 +1,6 @@
 from app.app import app, db
-from flask import render_template, Flask, request, jsonify
+import os
+from flask import render_template, request, jsonify
 from elasticsearch import Elasticsearch
 from Utils.elastic_search import sync_to_elasticsearch
 
@@ -15,7 +16,10 @@ def search_html():
 
 @app.route('/api/search_software')
 def search():
-    es = Elasticsearch("http://elasticsearch:9200")
+    elastic_host = os.getenv('ELASTIC_HOST')
+    elastic_port = os.getenv('ELASTIC_PORT')
+
+    es = Elasticsearch(hosts=[f"http://{elastic_host}:{elastic_port}"], request_timeout=60)
     query_str = request.args.get("q")
     if not query_str:
         return jsonify({"error": "Missing 'q' query parameter"}), 400
@@ -38,7 +42,10 @@ def search():
 
 @app.route('/api/search_document')
 def search_document():
-    es = Elasticsearch("http://elasticsearch:9200")
+    elastic_host = os.getenv('ELASTIC_HOST')
+    elastic_port = os.getenv('ELASTIC_PORT')
+
+    es = Elasticsearch(hosts=[f"http://{elastic_host}:{elastic_port}"], request_timeout=60)
     query_str = request.args.get("q")
     if not query_str:
         return jsonify({"error": "Missing 'q' query parameter"}), 400
@@ -58,7 +65,10 @@ def search_document():
 
 @app.route('/api/search_author')
 def search_author():
-    es = Elasticsearch("http://elasticsearch:9200")
+    elastic_host = os.getenv('ELASTIC_HOST')
+    elastic_port = os.getenv('ELASTIC_PORT')
+
+    es = Elasticsearch(hosts=[f"http://{elastic_host}:{elastic_port}"], request_timeout=60)
     query_str = request.args.get("q")
     if not query_str:
         return jsonify({"error": "Missing 'q' query parameter"}), 400
@@ -89,7 +99,10 @@ def search_author():
 
 @app.route('/api/search_structure')
 def search_structures():
-    es = Elasticsearch("http://elasticsearch:9200")
+    elastic_host = os.getenv('ELASTIC_HOST')
+    elastic_port = os.getenv('ELASTIC_PORT')
+
+    es = Elasticsearch(hosts=[f"http://{elastic_host}:{elastic_port}"], request_timeout=60)
     query_str = request.args.get("q", "").lower().strip()
     if not query_str:
         return jsonify({"error": "Missing 'q' query parameter"}), 400
@@ -140,6 +153,10 @@ def search_structures():
 
 @app.route('/api/search_url')
 def search_url():
+    elastic_host = os.getenv('ELASTIC_HOST')
+    elastic_port = os.getenv('ELASTIC_PORT')
+
+    es = Elasticsearch(hosts=[f"http://{elastic_host}:{elastic_port}"], request_timeout=60)
     query_str = request.args.get("q", "").lower().strip()
     if not query_str:
         return jsonify([])
@@ -163,7 +180,7 @@ def search_url():
     results = [
         {
             "doc_id": hit["_source"]["doc_id"],
-            "url": hit["_source"]["url_exact"]
+            "url": hit["_source"].get("url_exact", hit["_source"].get("url"))
         }
         for hit in response["hits"]["hits"]
     ]

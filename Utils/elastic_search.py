@@ -286,10 +286,13 @@ def sync_to_elasticsearch(db):
     cursor = db.AQLQuery('''
         FOR url_soft IN softwares
             FILTER url_soft.url != null
-            RETURN DISTINCT {
-                doc_id: url_soft._id,
-                url: url_soft.url.normalizedForm
-            }
+            FOR edge in edge_doc_to_software
+                FILTER edge._to == url_soft._id
+                LET doc = DOCUMENT(edge._from)
+                RETURN DISTINCT {
+                    doc_id: doc.file_hal_id,
+                    url: url_soft.url.normalizedForm
+                }
     ''', rawResults=True)
 
     url_list = list(cursor)
