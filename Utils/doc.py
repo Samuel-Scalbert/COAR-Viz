@@ -201,7 +201,7 @@ def doc_info_from_id(file_id,db):
             if json_software['url']:
                url = json_software['url']
                cleaned = re.sub(r"\s+", "", url["normalizedForm"])
-               if cleaned.startswith("http"):
+               if cleaned.startswith("http") or cleaned.startswith("www"):
                    urls.add(cleaned)
         except KeyError:
             continue
