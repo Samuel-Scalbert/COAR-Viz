@@ -1,5 +1,5 @@
 from pyArango.theExceptions import AQLQueryError
-from collections import defaultdict
+import re
 
 def doc_software(file_id,software,db):
     dic_context = {"used": [], "created": [], "shared": []}
@@ -105,7 +105,7 @@ def doc_software(file_id,software,db):
 
 def doc_info_from_id(file_id,db):
     dic_context = {"used": [], "created": [], "shared": []}
-    software_title = {}
+    urls = set()
     try:
         file_meta = db.AQLQuery(
             "FOR file_meta in documents FILTER file_meta.file_hal_id == '" + file_id + "'  RETURN file_meta",
@@ -121,10 +121,7 @@ def doc_info_from_id(file_id,db):
         abstract = (file_meta[0]['abstract'])
     except KeyError:
         abstract = 'No abstract'
-    try :
-        urls = file_meta[0]['urls_verified_SH']
-    except KeyError:
-        urls = None
+
     max_attribute = None
     query = f"""
                    LET doc = DOCUMENT('{file_meta_id}')
@@ -200,6 +197,14 @@ def doc_info_from_id(file_id,db):
                     max_score = details["score"]
                     max_attribute = attribute
             dic_context[max_attribute].append(context)
+        try:
+            if json_software['url']:
+               url = json_software['url']
+               cleaned = re.sub(r"\s+", "", url["normalizedForm"])
+               if cleaned.startswith("http"):
+                   urls.add(cleaned)
+        except KeyError:
+            continue
 
     title = db.AQLQuery(f"LET doc = DOCUMENT('{file_meta_id}') RETURN doc.title", rawResults=True)
     title = title[0]
