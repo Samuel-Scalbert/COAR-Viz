@@ -841,7 +841,7 @@ input#input-box-dis{
   border-bottom: none;
 }
 
-.doc-card ul li strong {
+.doc-card ul li strong:first-child {
   color: #007bff;
   font-weight: 600;
 }

@@ -101,10 +101,6 @@ function renderJSON(obj,sw,docid) {
             verification_status = ``;
         }
 
-
-
-
-
         return `
             <div class="doc-card">
                 <h3>${doc.title || "(No title)"}</h3>
@@ -123,9 +119,18 @@ function renderJSON(obj,sw,docid) {
                 ` : ""}</p>
                 <h4>Software Mentions (${softwareList.length}):</h4>
                 <ul>
-                    ${softwareList.map(sw =>
-                        `<li sw-name="${sw.name}"><strong>${sw.name}</strong>: ${sw.context}</li>`
-                    ).join("")}
+                  ${
+                    softwareList.map(sw => {
+                      // Escape regex special characters
+                      const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                      const regex = new RegExp(escapeRegExp(sw.name), 'gi');
+                
+                      // Replace software name in context with <strong> tags
+                      const highlightedContext = sw.context.replace(regex, `<strong>${sw.name}</strong>`);
+                
+                      return `<li sw-name="${sw.name}"><strong>${sw.name}</strong>:${highlightedContext}</li>`;
+                    }).join('')
+                  }
                 </ul>
 
                 <h4>Authors:</h4>
@@ -189,7 +194,6 @@ async function renderComparison(ogJson, ogName, swJson, swName) {
     const ogStruct = og.structures?.map(s => s.id_haureal) || [];
     const swStruct = sw.structures?.map(s => s.id_haureal) || [];
 
-    const ogSoftware = og.software?.map(s => s.context) || [];
     const swSoftware = sw.software?.map(s => s.context) || [];
 
     const ogAuthorsById = Object.fromEntries(og.authors.map(a => [a.halAuthorId, a.name]));
