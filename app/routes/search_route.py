@@ -1,6 +1,13 @@
-from app.app import app
+from app.app import app, db
 from flask import render_template, Flask, request, jsonify
 from elasticsearch import Elasticsearch
+from Utils.elastic_search import sync_to_elasticsearch
+
+# Trigger Elasticsearch sync manually
+@app.route('/elastic_update')
+def elastic_update():
+    sync_to_elasticsearch(db)
+    return "Elastic executed manually!"
 
 @app.route('/search')
 def search_html():
@@ -133,32 +140,36 @@ def search_structures():
 
 @app.route('/api/search_url')
 def search_url():
-    es = Elasticsearch("http://elasticsearch:9200")
     query_str = request.args.get("q", "").lower().strip()
     if not query_str:
-        return jsonify({"error": "Missing 'q' query parameter"}), 400
+        return jsonify([])
 
-    # Simple prefix search on URL field
     query = {
         "query": {
-            "prefix": {
-                "url": query_str
+            "multi_match": {
+                "query": query_str,
+                "fields": [
+                    "url^3",          # autocomplete field (boosted)
+                    "url_exact^5"     # exact match strongly boosted
+                ],
+                "type": "best_fields",
+                "fuzziness": "AUTO"
             }
         }
     }
 
-    response = es.search(index="urls", body=query, size=100)
+    response = es.search(index="urls", body=query, size=50)
 
-    # Return both document ID and URL
     results = [
         {
             "doc_id": hit["_source"]["doc_id"],
-            "url": hit["_source"]["url"]
+            "url": hit["_source"]["url_exact"]
         }
         for hit in response["hits"]["hits"]
     ]
 
     return jsonify(results)
+
 
 
 

@@ -239,10 +239,23 @@ def sync_to_elasticsearch(db):
     if es.indices.exists(index="urls"):
         es.indices.delete(index="urls")
 
-    # Create index for URLs (storing only doc_id)
     index_body = {
         "settings": {
             "analysis": {
+                "analyzer": {
+                    "url_autocomplete_analyzer": {
+                        "tokenizer": "url_autocomplete_tokenizer",
+                        "filter": ["lowercase"]
+                    }
+                },
+                "tokenizer": {
+                    "url_autocomplete_tokenizer": {
+                        "type": "edge_ngram",
+                        "min_gram": 2,
+                        "max_gram": 30,
+                        "token_chars": ["letter", "digit", "punctuation", "symbol"]
+                    }
+                },
                 "normalizer": {
                     "lowercase_normalizer": {
                         "type": "custom",
@@ -255,6 +268,11 @@ def sync_to_elasticsearch(db):
             "properties": {
                 "doc_id": {"type": "keyword"},
                 "url": {
+                    "type": "text",
+                    "analyzer": "url_autocomplete_analyzer",
+                    "search_analyzer": "standard"
+                },
+                "url_exact": {
                     "type": "keyword",
                     "normalizer": "lowercase_normalizer"
                 }
