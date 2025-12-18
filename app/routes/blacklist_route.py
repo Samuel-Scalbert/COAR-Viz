@@ -139,7 +139,7 @@ def update_db_blacklist():
             software_id = software_document[0]
             log_message = test_delete_document_and_edges(db, software_id, "softwares")
             deleted_mention_list.append(log_message)
-            #delete_document_and_edges(db, software_id, "softwares")
+            delete_document_and_edges(db, software_id, "softwares")
 
     return jsonify({"message": "Database blacklist updated", "deleted_mention": deleted_mention_list})
 
