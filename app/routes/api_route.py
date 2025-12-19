@@ -495,3 +495,15 @@ def rejected_notification(hal_id, software_name):
             "status": "error",
             "message": str(e)
         }), 500
+
+@app.route("/api/document_failed_count")
+def document_failed_count():
+    try:
+        query = """
+        for f in notifications_failed
+            return f
+        """
+        result = db.AQLQuery(query, rawResults=True)
+        return result[0:]
+    except Exception as e:
+        return

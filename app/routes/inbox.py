@@ -5,7 +5,7 @@ from flask import request, jsonify
 from xml.sax.saxutils import unescape
 from xml.dom import minidom
 from app.app import app, db
-from Utils.db import insert_json_db, update_nb_notification
+from Utils.db import insert_json_db, update_nb_notification, update_nb_document_failed
 import re
 
 
@@ -131,6 +131,7 @@ def insert_json():
 
     if "file" not in request.files:
         final_log["errors"].append("No file found in request")
+        update_nb_document_failed(final_log, db)
         print("🟥", json.dumps(final_log, indent=4, ensure_ascii=False), "\n")
         return jsonify(final_log), 400
 
@@ -153,6 +154,7 @@ def insert_json():
 
         if response.status_code != 200:
             final_log["errors"].append(f"Failed to download XML for {hal_id}")
+            update_nb_document_failed(final_log, db)
             print("🟥", json.dumps(final_log, indent=4, ensure_ascii=False), "\n")
             return jsonify(final_log), 500
 
@@ -175,6 +177,7 @@ def insert_json():
 
     except Exception as e:
         final_log["errors"].append(f"Exception while downloading XML: {str(e)}")
+        update_nb_document_failed(final_log, db)
         print("🟥", json.dumps(final_log, indent=4, ensure_ascii=False), "\n")
         return jsonify(final_log), 500
 
@@ -198,6 +201,7 @@ def insert_json():
 
     except Exception as e:
         final_log["errors"].append(f"Exception while saving JSON: {str(e)}")
+        update_nb_document_failed(final_log, db)
         print("🟥", json.dumps(final_log, indent=4, ensure_ascii=False), "\n")
         return jsonify(final_log), 500
 
@@ -206,6 +210,7 @@ def insert_json():
 
     if json_path is None and xml_path is None:
         print("🟥", json.dumps(final_log, indent=4, ensure_ascii=False), "\n")
+        update_nb_document_failed(final_log, db)
         return jsonify(final_log), 500
 
     result = insert_json_db(json_path, xml_path, db)
@@ -233,5 +238,6 @@ def insert_json():
         final_log["errors"].append(result[1])
         final_log["step"] = result[0]
         print("🟥",json.dumps(final_log, indent=4, ensure_ascii=False),"\n")
+        update_nb_document_failed(final_log, db)
         return jsonify(final_log), 409
 

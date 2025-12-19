@@ -85,7 +85,6 @@ def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_f
 
     return None
 
-
 def is_elasticsearch_alive(timeout=10):
     host = os.environ.get("ELASTIC_HOST")
     port = os.environ.get("ELASTIC_PORT")
@@ -115,8 +114,6 @@ def is_elasticsearch_alive(timeout=10):
     except Exception as e:
         return [False, f"Unexpected error: {e}"]
 
-
-
 def check_or_create_collection(db, collection_name, collection_type='Collection'):
     """
     Checks if a collection exists in the database. If not, creates the collection.
@@ -143,7 +140,6 @@ def duplicates_JSON(lst):
             seen.add(item_hashable)
 
     return duplicates
-
 
 def find_ancestor_paths(current_affiliation_id, ns, tree):
     # Look for the current structure's relations
@@ -174,6 +170,20 @@ def find_ancestor_paths(current_affiliation_id, ns, tree):
             all_paths.append(
                 [current_affiliation_id] + path)  # Create a separate path for each relation
     return all_paths  # Return all paths for the current structure
+
+def update_nb_document_failed(error_log,db):
+    check_or_create_collection(db, 'notifications_failed')
+    type = error_log["step"]
+    # UPSERT in ArangoDB: insert if not exists, update if exists
+    query = f"""
+    UPSERT {{ type: "{type}" }}
+    INSERT {{ type: "{type}", count: 1}}
+    UPDATE {{ 
+        count: OLD.count + 1, 
+    }} IN notifications_failed
+    RETURN NEW
+    """
+    db.AQLQuery(query, rawResults=True)
 
 def update_nb_notification(db, filename):
     notifications_collection = check_or_create_collection(db, 'notifications')

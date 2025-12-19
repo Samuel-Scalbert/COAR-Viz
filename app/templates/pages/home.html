@@ -23,6 +23,11 @@
                     </div>
                     <div class="time_block">
                         <div class="time_info">
+                            <canvas id="barChartErrors"></canvas>
+                        </div>
+                    </div>
+                    <div class="time_block">
+                        <div class="time_info">
                             <canvas id="lineChartMentionAccepted"></canvas>
                         </div>
                     </div>
@@ -166,5 +171,5 @@
 
 {% block scripts %}
 
-  <script src="{{ url_for('static', filename='./JS/chart_line_notif.js') }}"></script>
+  <script src="{{ url_for('static', filename='./JS/home.js') }}"></script>
 {% endblock %}
