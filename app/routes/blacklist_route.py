@@ -1,7 +1,32 @@
 from app.app import app, db
+from Utils.db import check_or_create_collection
 from flask import jsonify
 import csv
-import os
+
+def get_list_blacklist():
+    list = db.AQLQuery("for b in blacklist return distinct b.name", rawResults=True, batchSize=all)
+    return list[0:]
+
+def apply_blacklist_to_db():
+    blacklist = get_list_blacklist()
+
+    deleted_mention_list = []
+
+    query = '''
+        FOR soft IN softwares
+            RETURN [soft._id, soft.software_name.normalizedForm]
+    '''
+
+    list_software_documents = db.AQLQuery(query, rawResults=True)
+
+    for software_document in list_software_documents:
+        if software_document[1] in blacklist:
+            software_id = software_document[0]
+            log_message = test_delete_document_and_edges(db, software_id, "softwares")
+            deleted_mention_list.append(log_message)
+            delete_document_and_edges(db, software_id, "softwares")
+
+    return deleted_mention_list
 
 
 def delete_document_and_edges(db, doc_id, collection_name):
@@ -62,7 +87,7 @@ def test_delete_document_and_edges(db, doc_id, collection_name):
                 "id": edge["_id"],
                 "from": edge["_from"],
                 "to": edge["_to"],
-                "action": "would_delete"
+                "action": "deleted"
             })
 
     # Check document that would be deleted
@@ -75,7 +100,7 @@ def test_delete_document_and_edges(db, doc_id, collection_name):
             "type": "document",
             "collection": collection_name,
             "id": doc_id,
-            "action": "would_delete"
+            "action": "deleted"
         })
     except KeyError:
         log.append({
@@ -87,70 +112,83 @@ def test_delete_document_and_edges(db, doc_id, collection_name):
 
     return log
 
-
 BLACKLIST_PATH = './app/static/data/blacklist.csv'
 
-
-@app.route('/update_blacklist/<software_name>')
+@app.route('/add_to_blacklist/<software_name>')
 def update_blacklist(software_name):
 
     # Read existing blacklist
-    existing = set()
-    if os.path.exists(BLACKLIST_PATH):
-        with open(BLACKLIST_PATH, newline='', encoding='utf-8') as csvfile:
-            reader = csv.reader(csvfile)
-            next(reader)  # skip header
-            for row in reader:
-                if row:
-                    existing.add(row[0])
+    existing = get_list_blacklist()
 
     # Check if already added
     if software_name in existing:
         return jsonify({"message": "Software already in blacklist", "software": software_name})
-
-    # Append new entry
-    with open(BLACKLIST_PATH, 'a', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow([software_name])
+    else:
+        query = """
+               UPSERT { name: @name }
+               INSERT { name: @name }
+               UPDATE { name: @name }
+               IN blacklist
+               RETURN NEW
+           """
+        db.AQLQuery(
+            query,
+            bindVars={"name": software_name},
+            rawResults=True
+        )
 
     return jsonify({"message": "Software added to blacklist", "software": software_name})
 
 
 @app.route('/update_db_blacklist')
 def update_db_blacklist():
+    deleted_mention_list = apply_blacklist_to_db()
+    return jsonify({
+        "message": "Database blacklist updated",
+        "deleted_mention": deleted_mention_list
+    })
 
-    blacklist = []
+@app.route('/register_blacklist')
+def register_blacklist():
+
+    check_or_create_collection(db, 'blacklist')
+
+    list_already_registered = get_list_blacklist()
+    registered = []
+    list=[]
+
+    query = """
+        UPSERT { name: @name }
+        INSERT { name: @name }
+        UPDATE { name: @name }
+        IN blacklist
+        RETURN NEW
+    """
+
     with open(BLACKLIST_PATH, newline='', encoding='utf-8') as csvfile:
         reader = csv.reader(csvfile)
-        next(reader)  # skip header
+        next(reader, None)  # skip header safely
+
         for row in reader:
-            if row:  # skip empty rows
-                blacklist.append(row[0])
+            if not row:
+                continue
 
-    deleted_mention_list = []
+            software_name = row[0]
 
-    query = f'''
-            FOR soft IN softwares return [soft._id,soft.software_name.normalizedForm]
-            '''
+            if software_name in list_already_registered:
+                continue
 
-    list_software_documents = db.AQLQuery(query, rawResults=True)
-    for software_document in list_software_documents:
-        if software_document[1] in blacklist:
-            software_id = software_document[0]
-            log_message = test_delete_document_and_edges(db, software_id, "softwares")
-            deleted_mention_list.append(log_message)
-            delete_document_and_edges(db, software_id, "softwares")
+            result = db.AQLQuery(
+                query,
+                bindVars={"name": software_name},
+                rawResults=True
+            )
 
-    return jsonify({"message": "Database blacklist updated", "deleted_mention": deleted_mention_list})
+            if result:
+                registered.append(result[0])
 
-
-@app.route('/blacklist')
-def blacklist():
-    blacklist = []
-    with open(BLACKLIST_PATH, newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-        next(reader)  # skip header
-        for row in reader:
-            if row:  # skip empty rows
-                blacklist.append(row[0])
-    return jsonify(blacklist)
+    return jsonify({
+        "message": "Blacklist registered in database",
+        "registered_count": len(registered),
+        "registered": registered
+    })

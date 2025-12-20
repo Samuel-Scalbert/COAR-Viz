@@ -44,5 +44,7 @@ from app.routes import doc_route, dashboard_route,blacklist_route, software_rout
 
 @app.route('/')
 def home():
+    from app.routes.blacklist_route import apply_blacklist_to_db
+    apply_blacklist_to_db()
     data = home_data(db)
     return render_template('pages/home.html', data=data[0])

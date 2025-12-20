@@ -4,7 +4,6 @@ from pyArango.theExceptions import AQLQueryError
 from Utils.TEI_to_JSON import transformer_TEI_JSON
 import requests
 from datetime import date
-import csv
 import xml.etree.ElementTree as ET
 import re
 
@@ -287,20 +286,14 @@ def update_nb_rejected(db):
         return None
 
 def insert_json_db(data_path_json,data_path_xml,db):
+    from app.routes.blacklist_route import get_list_blacklist
     elastich_alive = is_elasticsearch_alive()
 
     if not elastich_alive[0]:
         return ["Elasticsearch Error",elastich_alive[1]]
 
     xml_safe_parser = ""
-    blacklist = []
-
-    with open('./app/static/data/blacklist.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-        next(reader)  # skip header
-        for row in reader:
-            if row:  # skip empty rows
-                blacklist.append(row[0])
+    blacklist = get_list_blacklist
 
     # Create or retrieve collections
     documents_collection = check_or_create_collection(db, 'documents')
