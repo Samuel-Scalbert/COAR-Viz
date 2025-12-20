@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blacklist Manager</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #111;
+            color: #0f0;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .blacklist {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            align-items: flex-start;
+            justify-content: flex-start;
+            height: calc(100vh - 40px);
+        }
+
+        .input-form {
+            flex: 0 0 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-form input[type="text"] {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #333;
+            background-color: #111;
+            color: #0f0;
+            border-radius: 6px;
+        }
+
+        .input-form button {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #333;
+            background-color: #222;
+            color: #0f0;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .input-form button:hover {
+            background-color: #333;
+        }
+
+        .list_blacklisted, .log-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .list_blacklisted h3, .log-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+
+        .list_blacklisted ul {
+            flex: 1;
+            list-style: none;
+            padding: 10px;
+            margin: 0;
+            background-color: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            overflow-y: auto;
+        }
+
+        .list_blacklisted ul li {
+            padding: 4px 0;
+        }
+
+        .log-card .log {
+            flex: 1;
+            background-color: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="blacklist">
+
+    <!-- Input Form -->
+    <div class="input-form">
+        <input type="text" id="software-name" placeholder="Software name">
+        <button id="add-blacklist">Add to Blacklist</button>
+        <button id="apply-blacklist">Apply Blacklist to DB</button>
+    </div>
+
+    <!-- Current Blacklist -->
+    <div class="list_blacklisted">
+        <h3>Current Blacklist:</h3>
+        <ul>
+            {% for item in data %}
+                <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Log / Messages -->
+    <div class="log-card">
+        <h3>Log messages:</h3>
+        <div class="log"></div>
+    </div>
+
+</div>
+
+<script>
+const logDiv = document.querySelector(".log");
+
+// Helper function to append messages
+function appendLog(message) {
+    const timestamp = new Date().toLocaleTimeString();
+    logDiv.textContent += `[${timestamp}] ${message}\n`;
+    logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+// Add software to blacklist
+document.getElementById("add-blacklist").addEventListener("click", async function() {
+    const softwareName = document.getElementById("software-name").value.trim();
+    if (!softwareName) {
+        appendLog("No software name provided");
+        return;
+    }
+
+    appendLog(`Adding "${softwareName}" to blacklist...`);
+
+    try {
+        const response = await fetch(`/add_to_blacklist/${encodeURIComponent(softwareName)}`);
+        const result = await response.json();
+
+        appendLog(result.message);
+
+        document.getElementById("software-name").value = "";
+
+        // Update blacklist list
+        const listDiv = document.querySelector(".list_blacklisted ul");
+        if (listDiv && response.status === 201) {
+            const li = document.createElement("li");
+            li.textContent = softwareName;
+            listDiv.appendChild(li);
+        }
+    } catch (err) {
+        appendLog(`Error: ${err}`);
+    }
+});
+
+// Apply blacklist to DB
+document.getElementById("apply-blacklist").addEventListener("click", async function() {
+    appendLog("Applying blacklist to database...");
+
+    try {
+        const response = await fetch("{{ url_for('update_db_blacklist') }}");
+        const result = await response.json();
+        appendLog(JSON.stringify(result, null, 2));
+    } catch (err) {
+        appendLog(`Error: ${err}`);
+    }
+});
+</script>
+
+</body>
+</html>

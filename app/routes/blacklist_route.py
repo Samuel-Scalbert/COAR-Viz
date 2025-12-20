@@ -1,6 +1,6 @@
 from app.app import app, db
 from Utils.db import check_or_create_collection
-from flask import jsonify
+from flask import jsonify, render_template, request, flash, redirect, url_for, get_flashed_messages
 import csv
 
 def get_list_blacklist():
@@ -115,14 +115,14 @@ def test_delete_document_and_edges(db, doc_id, collection_name):
 BLACKLIST_PATH = './app/static/data/blacklist.csv'
 
 @app.route('/add_to_blacklist/<software_name>')
-def update_blacklist(software_name):
+def add_to_blacklist(software_name):
 
     # Read existing blacklist
     existing = get_list_blacklist()
 
     # Check if already added
     if software_name in existing:
-        return jsonify({"message": "Software already in blacklist", "software": software_name})
+        return jsonify({"message": "Software already in blacklist", "software": software_name}), 500
     else:
         query = """
                UPSERT { name: @name }
@@ -137,7 +137,7 @@ def update_blacklist(software_name):
             rawResults=True
         )
 
-    return jsonify({"message": "Software added to blacklist", "software": software_name})
+    return jsonify({"message": "Software added to blacklist", "software": software_name}), 201
 
 
 @app.route('/update_db_blacklist')
@@ -192,3 +192,10 @@ def register_blacklist():
         "registered_count": len(registered),
         "registered": registered
     })
+
+@app.route('/blacklist', methods=['GET', 'POST'])
+def blacklist_form():
+    data = get_list_blacklist()
+    messages = ""
+    return render_template('pages/blacklist.html', data=data, messages=messages)
+
