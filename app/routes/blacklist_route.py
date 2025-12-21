@@ -4,19 +4,19 @@ from flask import jsonify, render_template
 import csv
 from pyArango.theExceptions import AQLQueryError
 
+BLACKLIST_PATH = './app/static/data/blacklist.csv'
+
 def get_list_blacklist():
 
     try:
         result = db.AQLQuery(
             "FOR b IN blacklist RETURN DISTINCT b.name",
-            rawResults=True
+            rawResults=True, batchSize=all
         )
     except AQLQueryError:
         return []
 
     return result[:]
-
-
 
 def apply_blacklist_to_db():
     blacklist = get_list_blacklist()
@@ -39,7 +39,6 @@ def apply_blacklist_to_db():
             delete_document_and_edges(db, software_id, "softwares")
 
     return deleted_mention_list
-
 
 def delete_document_and_edges(db, doc_id, collection_name):
 
@@ -124,8 +123,6 @@ def test_delete_document_and_edges(db, doc_id, collection_name):
 
     return log
 
-BLACKLIST_PATH = './app/static/data/blacklist.csv'
-
 @app.route('/add_to_blacklist/<software_name>')
 def add_to_blacklist(software_name):
 
@@ -162,7 +159,7 @@ def remove_from_blacklist(software_name):
         return jsonify({
             "message": "Software not found in blacklist",
             "software": software_name
-        }), 404
+        }), 409
 
     # Remove from blacklist
     query = """
