@@ -1,11 +1,22 @@
 from app.app import app, db
 from Utils.db import check_or_create_collection
-from flask import jsonify, render_template, request, flash, redirect, url_for, get_flashed_messages
+from flask import jsonify, render_template
 import csv
+from pyArango.theExceptions import AQLQueryError
 
 def get_list_blacklist():
-    list = db.AQLQuery("for b in blacklist return distinct b.name", rawResults=True, batchSize=all)
-    return list[0:]
+
+    try:
+        result = db.AQLQuery(
+            "FOR b IN blacklist RETURN DISTINCT b.name",
+            rawResults=True
+        )
+    except AQLQueryError:
+        return []
+
+    return result[:]
+
+
 
 def apply_blacklist_to_db():
     blacklist = get_list_blacklist()
@@ -18,6 +29,7 @@ def apply_blacklist_to_db():
     '''
 
     list_software_documents = db.AQLQuery(query, rawResults=True)
+
 
     for software_document in list_software_documents:
         if software_document[1] in blacklist:
@@ -139,6 +151,38 @@ def add_to_blacklist(software_name):
 
     return jsonify({"message": "Software added to blacklist", "software": software_name}), 201
 
+@app.route('/remove_from_blacklist/<software_name>', methods=['DELETE'])
+def remove_from_blacklist(software_name):
+
+    # Read existing blacklist
+    existing = get_list_blacklist()
+
+    # Check if software exists
+    if software_name not in existing:
+        return jsonify({
+            "message": "Software not found in blacklist",
+            "software": software_name
+        }), 404
+
+    # Remove from blacklist
+    query = """
+        FOR s IN blacklist
+            FILTER s.name == @name
+            REMOVE s IN blacklist
+            RETURN OLD
+    """
+
+    db.AQLQuery(
+        query,
+        bindVars={"name": software_name},
+        rawResults=True
+    )
+
+    return jsonify({
+        "message": "Software removed from blacklist",
+        "software": software_name
+    }), 200
+
 
 @app.route('/update_db_blacklist')
 def update_db_blacklist():
@@ -155,7 +199,6 @@ def register_blacklist():
 
     list_already_registered = get_list_blacklist()
     registered = []
-    list=[]
 
     query = """
         UPSERT { name: @name }

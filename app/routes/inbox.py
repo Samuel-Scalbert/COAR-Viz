@@ -6,6 +6,7 @@ from xml.sax.saxutils import unescape
 from xml.dom import minidom
 from app.app import app, db
 from Utils.db import insert_json_db, update_nb_notification, update_nb_document_failed
+from app.routes.blacklist_route import get_list_blacklist
 import re
 
 
@@ -115,6 +116,8 @@ def save_json(file, folder="./app/static/data/json"):
 @app.route('/insert_json', methods=['POST'])
 def insert_json():
 
+    blacklist = get_list_blacklist()
+
     final_log = {
         "step": "",
         "status": "error",
@@ -213,7 +216,7 @@ def insert_json():
         update_nb_document_failed(final_log, db)
         return jsonify(final_log), 500
 
-    result = insert_json_db(json_path, xml_path, db)
+    result = insert_json_db(json_path, xml_path, db, blacklist)
 
     if result[0] == "success":
 

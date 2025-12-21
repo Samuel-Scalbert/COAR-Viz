@@ -6,6 +6,8 @@ import requests
 from datetime import date
 import xml.etree.ElementTree as ET
 import re
+from pyArango.theExceptions import CreationError
+
 
 def parse_xml_safely(file_path, snippet_len=50, log_file="xml_errors.log", max_fixes=20):
     """
@@ -115,17 +117,24 @@ def is_elasticsearch_alive(timeout=10):
 
 def check_or_create_collection(db, collection_name, collection_type='Collection'):
     """
-    Checks if a collection exists in the database. If not, creates the collection.
-    :param db: Database connection
-    :param collection_name: Name of the collection
-    :param collection_type: Type of the collection ('Collection' or 'Edges')
-    :return: The collection object
+    Checks if a collection exists in the database.
+    Creates it if missing (safe under concurrency).
     """
-    if db.hasCollection(collection_name):
-        return db[collection_name]
-    else:
-        db.createCollection(collection_type, name=collection_name)
-        return db[collection_name]
+    try:
+        if not db.hasCollection(collection_name):
+            db.createCollection(
+                name=collection_name,
+                className=collection_type
+            )
+    except CreationError as e:
+        # Another request created it at the same time
+        if "exists" in str(e).lower() or "duplicate" in str(e).lower():
+            pass
+        else:
+            raise
+
+    return db[collection_name]
+
 
 def duplicates_JSON(lst):
     seen = set()
@@ -285,15 +294,13 @@ def update_nb_rejected(db):
         print(f"⚠️ Unexpected error in update_nb_rejected: {e}")
         return None
 
-def insert_json_db(data_path_json,data_path_xml,db):
-    from app.routes.blacklist_route import get_list_blacklist
+def insert_json_db(data_path_json,data_path_xml,db, blacklist):
     elastich_alive = is_elasticsearch_alive()
 
     if not elastich_alive[0]:
         return ["Elasticsearch Error",elastich_alive[1]]
 
     xml_safe_parser = ""
-    blacklist = get_list_blacklist
 
     # Create or retrieve collections
     documents_collection = check_or_create_collection(db, 'documents')

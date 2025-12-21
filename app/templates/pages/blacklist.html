@@ -34,6 +34,11 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            height: 100%;
+        }
+
+        #egg{
+            margin-top: auto;
         }
 
         .input-form input[type="text"] {
@@ -106,6 +111,8 @@
     <div class="input-form">
         <input type="text" id="software-name" placeholder="Software name">
         <button id="add-blacklist">Add to Blacklist</button>
+        <button id="remove-blacklist">Remove from Blacklist</button>
+        <img id="egg" src="{{ url_for('static', filename='img/ezgif-270f2a9876be75f7.gif') }}" style="width:200px; visibility:hidden">
         <button id="apply-blacklist">Apply Blacklist to DB</button>
     </div>
 
@@ -166,6 +173,49 @@ document.getElementById("add-blacklist").addEventListener("click", async functio
         appendLog(`Error: ${err}`);
     }
 });
+
+document.getElementById("remove-blacklist").addEventListener("click", async function () {
+    const softwareName = document.getElementById("software-name").value.trim();
+    if (!softwareName) {
+        appendLog("No software name provided");
+        return;
+    }
+
+    appendLog(`Removing "${softwareName}" from blacklist...`);
+
+    if (softwareName === 'scalbert') {
+        egg = document.getElementById('egg')
+        appendLog("Are you really trying to remove me ?? ._.")
+        egg.style = "visibility:visible; width:250px; margin-top:auto"
+        return
+    }
+
+    try {
+        const response = await fetch(
+            `/remove_from_blacklist/${encodeURIComponent(softwareName)}`,
+            { method: "DELETE" }
+        );
+
+        const result = await response.json();
+        appendLog(result.message);
+
+        document.getElementById("software-name").value = "";
+
+        // Update blacklist list (remove item)
+        if (response.status === 200) {
+            const listItems = document.querySelectorAll(".list_blacklisted ul li");
+            listItems.forEach(li => {
+                if (li.textContent === softwareName) {
+                    li.remove();
+                }
+            });
+        }
+
+    } catch (err) {
+        appendLog(`Error: ${err}`);
+    }
+});
+
 
 // Apply blacklist to DB
 document.getElementById("apply-blacklist").addEventListener("click", async function() {
